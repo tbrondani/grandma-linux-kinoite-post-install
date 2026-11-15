@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+validation-report*.json
+test-results/
+.vm-state/
+*.iso
