@@ -23,7 +23,7 @@ check_system() {
 install_system() {
     local package
     local -a missing=()
-    for package in vim-enhanced restic; do
+    for package in vim-enhanced restic fastfetch b3sum kdialog python3-dbus python3-gobject-base; do
         if (( DRY_RUN )) || ! rpm -q "$package" >/dev/null 2>&1; then missing+=("$package"); fi
     done
     if (( ${#missing[@]} )); then

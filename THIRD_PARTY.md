@@ -43,3 +43,19 @@ Windows wallpaper dependencies are omitted so personal wallpaper is preserved. A
 At the maintainer's request, the Internet launcher uses the Chromium project icon while continuing to launch Brave. The source revision and SHA-256 are pinned in `data/internet-icon.json`. The icon is downloaded from Chromium upstream under its [BSD license](https://chromium.googlesource.com/chromium/src/+/main/LICENSE); it is not bundled here. This does not indicate Chromium is installed or that Chromium endorses this project. The start-menu icon in `assets/start.svg` is original MIT artwork.
 
 The installed Se7en Aero Plasma Style is locally adjusted to use 96% opacity on the popup background backing layer. The original SVG is retained beside it as `.before-grandma`; theme assets remain outside this repository.
+
+## Dictionary data
+
+`data/dictionaries.json` pins eight FreeDict bundles from the Omnidict catalogue and two WikDict StarDict archives. Each installed database includes its license and attribution; `SOURCE.json` retains the source URL and checksum. Portuguese–Italian and Spanish–Portuguese WikDict data are converted into Omnidict's documented SQLite bundle schema. Converted WikDict data remain CC-BY-SA-4.0; FreeDict packages retain their declared licenses. No dictionary data is bundled in this repository.
+
+## Organic Maps data
+
+`scripts/maps.py` is a project implementation of the catalogue-based download approach documented by Organic Maps' `tools/python/mwm_downloader.py` (https://github.com/organicmaps/organicmaps/blob/master/tools/python/mwm_downloader.py). No upstream Python code is bundled. It uses the installed application's catalogue and official HTTPS mirror discovery service. Downloaded `.mwm` data remain subject to Organic Maps' [data license and attribution](https://github.com/organicmaps/organicmaps/blob/master/DATA_LICENSE.txt), including OpenStreetMap contributors. Map data are not bundled in this repository.
+
+## Offline sentence translator
+
+Argos Translate 1.11.0 and Argos Translate GUI 1.6.5 are MIT-licensed upstream packages (https://github.com/argosopentech/argos-translate and https://github.com/argosopentech/argos-translate-gui). `scripts/translator-ui.py` adapts the upstream GUI with English/PT-BR labels, explicit translation and exception handling. It does not copy or vendor upstream application code.
+
+The isolated environment uses uv 0.13.8 (MIT/Apache-2.0), CPython 3.12.16 and pinned Python dependencies; their licenses remain installed with each distribution. CPU-only PyTorch is used. `data/translation-models.json` pins Argos OPUS model downloads, retaining upstream README and attribution inside each installed package. Model/data licenses are separate from this repository's MIT license. MiniSBD (AGPL-3.0, https://github.com/LibreTranslate/MiniSBD) and six pinned sentence models provide offline sentence splitting. No upstream packages or model binaries are bundled in this repository. Complete dependency and model license review remains a release requirement.
+
+Organic Maps 2026.11 uses `countries.json` and a nine-byte BLAKE3 digest. The downloader also accepts the older `countries.txt`/SHA-1 catalogue. The native `b3sum` package verifies modern maps using the upstream catalogue format (https://github.com/organicmaps/organicmaps/blob/master/tools/python/post_generation/hierarchy_to_countries.py). No upstream hashing implementation is vendored.

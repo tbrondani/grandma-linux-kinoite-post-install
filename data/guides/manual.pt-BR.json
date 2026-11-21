@@ -1,0 +1,208 @@
+{
+  "title": "Grandma Linux — Manual de uso",
+  "prompt": "Escolha uma tarefa. Feche a página para voltar a esta lista.",
+  "back": "Selecione OK para voltar à lista de tarefas.",
+  "topics": [
+    {
+      "id": "start",
+      "title": "Abrir um aplicativo",
+      "before": "Use o menu para encontrar todos os aplicativos.",
+      "steps": [
+        "Selecione o botão do menu no canto inferior esquerdo.",
+        "Selecione uma categoria.",
+        "Selecione um aplicativo."
+      ],
+      "result": "O aplicativo será aberto.",
+      "tip": "Para usar um ícone na área de trabalho, dê dois cliques nele."
+    },
+    {
+      "id": "files",
+      "title": "Encontrar seus arquivos",
+      "steps": [
+        "Abra Arquivos.",
+        "Selecione uma pasta no painel esquerdo.",
+        "Dê dois cliques em um arquivo."
+      ],
+      "result": "O arquivo será aberto em um aplicativo.",
+      "tip": "Downloads contém os arquivos baixados. Imagens contém suas fotos. Documentos contém seus documentos."
+    },
+    {
+      "id": "save",
+      "title": "Salvar um documento",
+      "before": "Use Documentos para escrever um documento. Use Bloco de Notas para uma anotação curta.",
+      "steps": [
+        "Pressione Ctrl+S no aplicativo.",
+        "Selecione a pasta de destino.",
+        "Digite um nome para o arquivo.",
+        "Selecione Salvar."
+      ],
+      "result": "O aplicativo salvará o arquivo.",
+      "tip": "Mantenha a extensão do arquivo que o aplicativo oferece."
+    },
+    {
+      "id": "internet",
+      "title": "Usar a internet e o WhatsApp",
+      "before": "Esses aplicativos precisam de conexão com a internet.",
+      "steps": [
+        "Abra Internet.",
+        "Selecione a barra de endereços na parte superior.",
+        "Digite o endereço de um site.",
+        "Pressione Enter."
+      ],
+      "result": "O site será aberto.",
+      "tip": "Para usar o WhatsApp, abra o ícone dele na área de trabalho. Siga as instruções para conectar seu celular."
+    },
+    {
+      "id": "photos",
+      "title": "Ver fotos ou um PDF",
+      "steps": [
+        "Abra Arquivos.",
+        "Selecione Imagens ou a pasta que contém o arquivo.",
+        "Dê dois cliques na foto ou no arquivo PDF."
+      ],
+      "result": "Fotos abre as fotos. PDF abre os documentos PDF.",
+      "tip": "Para assistir a um vídeo ou ouvir música, dê dois cliques no arquivo em Arquivos."
+    },
+    {
+      "id": "send",
+      "title": "Receber arquivos do celular",
+      "before": "O celular também precisa do LocalSend. Conecte os dois aparelhos à mesma rede Wi-Fi.",
+      "steps": [
+        "Abra Enviar Arquivos no computador.",
+        "Abra LocalSend no celular.",
+        "Selecione os arquivos para enviar no celular.",
+        "Selecione este computador como destino.",
+        "Aceite os arquivos no computador, se aparecer uma solicitação."
+      ],
+      "result": "A tela de transferência mostrará quando o envio terminar.",
+      "tip": "Use a tela de transferência para abrir os arquivos recebidos. Não precisa de cabo."
+    },
+    {
+      "id": "screenshot",
+      "title": "Tirar uma captura de tela",
+      "steps": [
+        "Abra Captura de Tela em Utilitários.",
+        "Selecione a ferramenta de captura na janela ou no menu do ícone perto do relógio.",
+        "Selecione a área para capturar.",
+        "Selecione o botão de copiar ou salvar."
+      ],
+      "result": "As capturas salvas ficam em Imagens/Screenshots.",
+      "tip": "Se aparecer uma solicitação, permita a captura da tela. A tecla Print Screen depende do atalho configurado."
+    },
+    {
+      "id": "translate",
+      "title": "Traduzir um texto curto",
+      "before": "Os idiomas instalados funcionam sem internet.",
+      "steps": [
+        "Abra Tradutor em Utilitários.",
+        "Selecione o idioma do texto à esquerda.",
+        "Selecione o idioma da tradução à direita.",
+        "Digite ou cole um texto curto no campo esquerdo.",
+        "Selecione Traduzir."
+      ],
+      "result": "A tradução aparecerá no campo direito.",
+      "tip": "Confira a tradução antes de usá-la. Algumas traduções para português podem usar palavras de Portugal."
+    },
+    {
+      "id": "dictionary",
+      "title": "Consultar uma palavra",
+      "before": "Dicionário traduz palavras. Use Tradutor para uma frase.",
+      "steps": [
+        "Abra Dicionário em Utilitários.",
+        "Selecione um dicionário para os idiomas desejados.",
+        "Digite a palavra.",
+        "Leia os resultados."
+      ],
+      "result": "O dicionário instalado funciona sem internet.",
+      "tip": "Selecione o sentido correto. Português para inglês é diferente de inglês para português."
+    },
+    {
+      "id": "maps",
+      "title": "Usar mapas sem internet",
+      "before": "Os mapas de Portugal estão instalados. Outras regiões precisam ser baixadas antes.",
+      "steps": [
+        "Abra Mapas em Utilitários.",
+        "Encontre Portugal no mapa.",
+        "Amplie o mapa para ver ruas e lugares."
+      ],
+      "result": "As regiões baixadas ficam disponíveis sem internet.",
+      "tip": "Sem informações de localização, o mapa pode não mostrar onde você está. Digite um lugar no campo de busca para encontrá-lo."
+    },
+    {
+      "id": "backup",
+      "title": "Fazer uma cópia dos arquivos",
+      "before": "Backup é uma cópia guardada dos seus arquivos pessoais.",
+      "steps": [
+        "Abra Backup em Utilitários.",
+        "Confira a data da última cópia concluída.",
+        "Selecione Fazer cópia agora.",
+        "Aguarde a mensagem de conclusão."
+      ],
+      "result": "A nova cópia contém Área de trabalho, Documentos, Downloads e Imagens.",
+      "tip": "As cópias mensais precisam do computador ligado e da sua sessão aberta. Essa cópia local não inclui o sistema instalado."
+    },
+    {
+      "id": "recover",
+      "title": "Recuperar arquivos",
+      "steps": [
+        "Abra Recuperar arquivos em Utilitários.",
+        "Selecione uma versão do backup.",
+        "Selecione uma pasta de destino.",
+        "Aguarde a mensagem de conclusão."
+      ],
+      "result": "Uma pasta nova será aberta com os arquivos recuperados. Seus arquivos atuais serão preservados.",
+      "tip": "Para usar uma cópia de outra instalação, selecione Abrir uma pasta de backup guardada."
+    },
+    {
+      "id": "keep-backup",
+      "title": "Guardar uma cópia antes de reinstalar",
+      "before": "Se você apagar o disco, também perderá o backup que está nele.",
+      "steps": [
+        "Abra Backup em Utilitários.",
+        "Selecione Abrir pasta do backup.",
+        "Copie a pasta inteira para outro local de armazenamento.",
+        "Guarde a chave de recuperação junto com a cópia."
+      ],
+      "result": "A pasta guardada contém o repositório, a chave e as instruções de recuperação.",
+      "tip": "Mantenha essa pasta privada. Peça ajuda antes de reinstalar o sistema."
+    },
+    {
+      "id": "updates",
+      "title": "Atualizar o computador",
+      "before": "As atualizações precisam de conexão com a internet.",
+      "steps": [
+        "Salve seu trabalho.",
+        "Abra Atualizações em Sistema.",
+        "Confira as atualizações disponíveis.",
+        "Selecione Atualizar tudo.",
+        "Reinicie o computador, se for solicitado."
+      ],
+      "result": "O Discover mostrará o andamento das atualizações.",
+      "tip": "Use a opção normal de reiniciar. Mantenha o computador ligado à energia durante as atualizações."
+    },
+    {
+      "id": "help",
+      "title": "Pedir ajuda",
+      "steps": [
+        "Abra Ajuda na área de trabalho.",
+        "Selecione Informações para suporte para ver os dados do computador.",
+        "Passe essas informações para a pessoa que vai ajudar."
+      ],
+      "result": "As informações ficam no computador até você compartilhá-las.",
+      "tip": "Para permitir ajuda à distância, selecione Suporte remoto em Ajuda. Compartilhe a senha temporária somente com quem vai ajudar. Feche Suporte Remoto ao terminar."
+    },
+    {
+      "id": "shutdown",
+      "title": "Desligar o computador",
+      "steps": [
+        "Salve seu trabalho.",
+        "Feche os aplicativos.",
+        "Abra o menu no canto inferior esquerdo.",
+        "Selecione Desligar.",
+        "Confirme, se for solicitado."
+      ],
+      "result": "O computador será desligado.",
+      "tip": "Use Reiniciar quando quiser que o computador ligue novamente."
+    }
+  ]
+}

@@ -90,6 +90,12 @@ def configure(root, dry_run=False):
         if not entry.get('Exec'):
             raise RuntimeError(f'No Exec in {source}')
         entry['Icon'] = browser_icon(root, data) if app_id == 'com.brave.Browser' else resolve_icon(entry.get('Icon', ''), search)
+        if app_id == 'com.rustdesk.RustDesk':
+            support=Path.home()/'.local/libexec/grandma-linux/remote-support-session.py'
+            support.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copyfile(root/'scripts/remote-support-session.py',support)
+            support.chmod(0o755)
+            entry['Exec'] = 'python3 "'+str(support)+'"'
         entry['Name'] = english
         entry['Name[en_US]'] = english
         entry['Name[pt_BR]'] = portuguese

@@ -44,3 +44,5 @@ curl -fsSL https://raw.githubusercontent.com/tbrondani/grandma-linux-kinoite-pos
 Remove `--dry-run` to install in a test VM. The installer downloads an archive and does not require Git. After a requested reboot, run the same command again. Do not use on your main machine yet.
 
 To use a published version, replace `main` in the URL with its tag and pass `GRANDMA_REF=vX.Y.Z` to Bash. No tested release exists yet.
+
+After setup, open **Help** or **User manual** on the desktop. See [local backup and recovery](docs/BACKUP.md).

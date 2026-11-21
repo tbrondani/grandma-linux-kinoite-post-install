@@ -11,6 +11,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 from desktop import entries, launcher_names
 from theme import install as install_theme, adjust_menu_opacity
+from remote_support import configure as configure_remote_support
 
 
 def write_ini(path, updates):
@@ -40,6 +41,9 @@ def configure(root, dry_run=False):
     installed = {}
     for app_id, native, en, pt in entries(root):
         installed[app_id] = next(name for name in launcher_names(app_id, native) if (apps / name).is_file())
+    installed['grandma-translator'] = 'grandma-translator.desktop'
+    for app in ['grandma-help','grandma-guide','grandma-backup','grandma-recover','grandma-support-info','grandma-updates']:
+        installed[app]=app+'.desktop'
     for key, value in [('SingleClick', 'false'), ('MiddleClickPaste', 'false')]:
         subprocess.run(['kwriteconfig6', '--file', 'kdeglobals', '--group', 'KDE', '--key', key, value], check=True)
     # MIME associations use the actual overridden upstream desktop filenames.
@@ -58,8 +62,8 @@ def configure(root, dry_run=False):
         ('Files', 'Arquivos e documentos', ['org.kde.dolphin','org.onlyoffice.desktopeditors','org.kde.okular','org.kde.kwrite','org.kde.ark']),
         ('Media', 'Fotos e mídia', ['org.kde.gwenview','org.videolan.VLC','org.kde.kamoso']),
         ('Sharing', 'Celular e compartilhamento', ['org.localsend.localsend_app','org.kde.kdeconnect']),
-        ('Reading', 'Leitura e escrita', ['com.ktechpit.omnidict']),
-        ('Utilities', 'Utilitários', ['org.kde.kcalc','org.flameshot.Flameshot','org.kde.kolourpaint','org.kde.filelight','io.missioncenter.MissionCenter','app.organicmaps.desktop']),
+        ('Help', 'Ajuda', ['grandma-help','grandma-guide','grandma-support-info','com.rustdesk.RustDesk']),
+        ('Utilities', 'Utilitários', ['org.kde.kcalc','org.flameshot.Flameshot','org.kde.kolourpaint','org.kde.filelight','io.missioncenter.MissionCenter','app.organicmaps.desktop','com.ktechpit.omnidict','grandma-translator','grandma-backup','grandma-recover']),
         ('Games', 'Jogos', [app_id for app_id in installed if app_id in {'org.kde.kpat','org.kde.kmines','org.kde.ksudoku','org.kde.kmahjongg','org.kde.palapeli','org.kde.kblocks','org.kde.kapman'}]),
     ]
     menu = ET.Element('Menu')
@@ -82,7 +86,7 @@ def configure(root, dry_run=False):
     write_ini(data / 'desktop-directories/grandma-System.directory', {'Desktop Entry': {'Type':'Directory','Name':'System','Name[pt_BR]':'Sistema','Icon':'preferences-system'}})
     ET.SubElement(tools,'Directory').text='grandma-System.directory'
     include=ET.SubElement(tools,'Include')
-    for filename in ('systemsettings.desktop','org.kde.discover.desktop','org.kde.konsole.desktop'):
+    for filename in ('systemsettings.desktop','org.kde.discover.desktop','org.kde.konsole.desktop','grandma-updates.desktop'):
         ET.SubElement(include,'Filename').text=filename
     menu_path=config / 'menus/plasma-applications.menu'
     menu_path.parent.mkdir(parents=True, exist_ok=True)
@@ -98,6 +102,7 @@ def configure(root, dry_run=False):
     captures.mkdir(parents=True, exist_ok=True)
     for path in (config / 'flameshot/flameshot.ini', Path.home() / '.var/app/org.flameshot.Flameshot/config/flameshot/flameshot.ini'):
         write_ini(path, {'General': {'savePath':str(captures),'savePathFixed':'true','saveAfterCopy':'true','copyOnDoubleClick':'true','filenamePattern':'%Y-%m-%d_%H-%M-%S','saveAsFileExtension':'png'}})
+    configure_remote_support()
     install_theme(root,data)
     adjust_menu_opacity(data)
     subprocess.run(['plasma-apply-colorscheme','Win7OS'],check=True)
@@ -111,6 +116,21 @@ def configure(root, dry_run=False):
         ('kwinrc','org.kde.kdecoration2','ButtonsOnLeft','M'),
         ('kwinrc','org.kde.kdecoration2','ButtonsOnRight','IAX')]:
         subprocess.run(['kwriteconfig6','--file',file,'--group',group,'--key',key,value],check=True)
+    # Plasma 6.8 moved the schedule into KNightTime; earlier Plasma uses kwinrc.
+    night_schema=Path('/usr/share/config.kcfg/nightlightsettings.kcfg')
+    modern=night_schema.is_file() and 'DarkLight' in night_schema.read_text()
+    night_values=[('kwinrc','NightColor','Active','true'),('kwinrc','NightColor','NightTemperature','4500')]
+    if modern:
+        night_values += [('kwinrc','NightColor','Mode','DarkLight'),
+            ('knighttimerc','General','Source','Times'),('knighttimerc','Times','SunsetStart','19:00:00'),
+            ('knighttimerc','Times','SunriseStart','05:00:00'),('knighttimerc','Times','TransitionDuration','1800')]
+    else:
+        night_values += [('kwinrc','NightColor','Mode','Times'),('kwinrc','NightColor','EveningBeginFixed','1900'),
+            ('kwinrc','NightColor','MorningBeginFixed','0500'),('kwinrc','NightColor','TransitionTime','30')]
+    for file,group,key,value in night_values:
+        subprocess.run(['kwriteconfig6','--notify','--file',file,'--group',group,'--key',key,value],check=True)
+    if modern:
+        subprocess.run(['systemctl','--user','restart','plasma-knighttimed.service'],check=True)
     subprocess.run(['gdbus','call','--session','--dest','org.kde.KWin','--object-path','/KWin','--method','org.kde.KWin.reconfigure'],check=True)
     start_icon=data / 'icons/hicolor/scalable/apps/grandma-start.svg'
     start_icon.parent.mkdir(parents=True,exist_ok=True)

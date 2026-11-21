@@ -65,15 +65,15 @@ autopart --type=plain
 ostreesetup --osname=fedora --remote=fedora --url=file:///ostree/repo --ref=fedora/{version}/x86_64/kinoite --nogpg
 reboot
 %post --erroronfail
-mkdir -p /etc/sddm.conf.d
+mkdir -p /etc/sddm.conf.d /etc/plasmalogin.conf.d
 cat > /etc/sddm.conf.d/grandma-test.conf <<SDDM
 [Autologin]
 User={user}
 Session=plasma.desktop
-Relogin=true
+Relogin=false
 SDDM
 if [ -f /usr/lib/systemd/system/plasmalogin.service ]; then
-    cp /etc/sddm.conf.d/grandma-test.conf /etc/plasmalogin.conf
+    cp /etc/sddm.conf.d/grandma-test.conf /etc/plasmalogin.conf.d/zz-grandma-test.conf
 fi
 systemctl enable sshd
 # Disposable VM only: allow the test runner to install layered packages and reboot.

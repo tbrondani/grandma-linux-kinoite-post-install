@@ -110,3 +110,36 @@ The November 15 Se7en Aero run passed 85 checks from the restored base and repea
 Kinoite 45 uses Plasma Login Manager. Test provisioning configures `/etc/plasmalogin.conf`; SDDM configuration alone does not enable its auto-login. This setting is for the disposable test VM, not a requirement for an end-user machine.
 
 A startup process can remain alive while displaying a KWallet prompt. Record credential dialogs separately; do not count startup success as a prompt-free end-user experience. The test VM uses auto-login, which does not provide the login password to kwallet-pam. Do not disable credential storage to make the startup probe pass.
+
+Run `python3 tests/remote-support.py` in the guest to check the supported launcher. It opens only RustDesk, minimizes its own window, then closes it through KWin. It checks that minimizing preserves the session and closing stops the sandbox. It does not inject input or validate a real incoming connection. Close any existing support session first.
+
+Offline translator checks (inside the VM, with no network):
+
+```sh
+unshare -Urn ~/.local/share/grandma-linux/translator/venv/bin/python tests/offline-translator.py
+unshare -Urn ~/.local/share/grandma-linux/translator/venv/bin/python tests/translator-ui.py
+```
+
+The GUI test uses an offscreen Qt platform and does not inject desktop input. Review translation quality and the actual UI manually. See [size measurement](docs/INSTALLATION-SIZE.md) for before/after inventory commands.
+
+`python3 tests/test_backup.py` needs restic. It creates temporary repositories and checks actual data recovery, repeat setup, retention isolation, missing storage, init failure, concurrent operations and a simulated reinstall. It does not modify the user's backup. Host checks skip these tests if restic is absent; run them in the VM.
+
+For a clean test VM that does not log into Maria automatically, run inside the guest before setup:
+
+```sh
+sudo python3 scripts/vm/configure-login.py --user maria
+```
+
+The helper configures Plasma Login Manager and SDDM, and enables system SSH. Reboot and verify the Wayland session before saving a clean baseline. Do not update a baseline from a VM after the project installer has run.
+
+Deployment logs are saved under `test-results/` and remain outside Git:
+
+- `deploy-<UTC timestamp>-<id>.log`: host and guest console output.
+- The matching `.json`: host exit code, phase, VM and guest work directory.
+- `deploy-...-guest-setup.log`: guest setup output, retained across the reboot stage.
+- `deploy-...-guest-execution.json`: separate setup and validation exit codes.
+- `validation-report.json`: individual acceptance checks.
+
+The runner copies guest logs even when setup fails before validation. A run that started before logging was added cannot provide its earlier console output retroactively. `python3 tests/test_vm_runner.py` verifies logging, failure propagation and the reboot boundary without changing a VM.
+
+Restoring the plain-layout test VM now also prepares its login configuration in the offline working copy with guestfish. The saved baseline is read-only during this operation. The host requires `guestfish` (libguestfs tools). The helper accepts only `.grandma-restore` images, checks the OSTree deployment layout, and labels the added configuration files for SELinux. Unsupported disk layouts stop before the live disk is replaced.

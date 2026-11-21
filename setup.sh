@@ -25,6 +25,12 @@ install_system
 install_apps
 desktop_args=()
 if (( DRY_RUN )); then desktop_args+=(--dry-run); fi
+python3 "$ROOT/scripts/translator.py" "${desktop_args[@]}"
 python3 "$ROOT/scripts/desktop.py" "${desktop_args[@]}"
 python3 "$ROOT/scripts/settings.py" "${desktop_args[@]}"
+python3 "$ROOT/scripts/user_tools_setup.py" "${desktop_args[@]}"
+python3 "$ROOT/scripts/dictionaries.py" "${desktop_args[@]}"
+python3 "$ROOT/scripts/maps.py" "${desktop_args[@]}"
 say 'Initial application setup complete. See docs/STATUS.md for pending features.' 'Configuração inicial de aplicativos concluída. Veja docs/STATUS.md para os recursos pendentes.'
+
+say 'Portugal maps are ready. Restart Maps after setup. See docs/OFFLINE.md.' 'Os mapas de Portugal estão prontos. Reabra Mapas após a configuração. Veja docs/OFFLINE.pt-BR.md.'
