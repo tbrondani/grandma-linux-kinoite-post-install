@@ -15,6 +15,8 @@ mkdir -p "$ROOT/test-results"
 log=$(mktemp "$ROOT/test-results/deploy-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX.log")
 summary="${log%.log}.json"
 phase=preflight
+TEST_UPDATE=${TEST_UPDATE:-0}
+[[ $TEST_UPDATE == 0 || $TEST_UPDATE == 1 ]] || { echo 'TEST_UPDATE must be 0 or 1.' >&2; exit 2; }
 remote_dir=''
 declare -a ssh_options=()
 exec > >(tee -a "$log") 2>&1
@@ -133,7 +135,7 @@ ssh "${ssh_options[@]}" "$target" "tar -xzf $remote_dir/project.tar.gz -C $remot
 for ((pass=0; pass<3; pass++)); do
     code=0
     phase="guest-setup-$((pass + 1))"
-    ssh "${ssh_options[@]}" "$target" "python3 $remote_dir/scripts/vm/run-guest.py" || code=$?
+    ssh "${ssh_options[@]}" "$target" "GRANDMA_TEST_UPDATE=$TEST_UPDATE python3 $remote_dir/scripts/vm/run-guest.py" || code=$?
     if (( code == 75 )); then
         phase=reboot
         echo 'Rebooting the test VM for the pending deployment...'

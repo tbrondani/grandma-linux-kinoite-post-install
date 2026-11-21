@@ -172,13 +172,13 @@
       "before": "As atualizações precisam de conexão com a internet.",
       "steps": [
         "Salve seu trabalho.",
-        "Abra Atualizações em Sistema.",
+        "Abra Atualizações em Sistema. Selecione Sistema e aplicativos.",
         "Confira as atualizações disponíveis.",
         "Selecione Atualizar tudo.",
-        "Reinicie o computador, se for solicitado."
+        "Reinicie o computador se solicitado."
       ],
       "result": "O Discover mostrará o andamento das atualizações.",
-      "tip": "Use a opção normal de reiniciar. Mantenha o computador ligado à energia durante as atualizações."
+      "tip": "Use a opção normal de reiniciar. Mantenha o computador ligado à energia durante as atualizações. Para atualizar o manual e a configuração do projeto, selecione Configuração e manual Grandma Linux em Atualizações."
     },
     {
       "id": "help",

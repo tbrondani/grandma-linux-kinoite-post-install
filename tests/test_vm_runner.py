@@ -18,6 +18,7 @@ class Runner(unittest.TestCase):
         (self.root/'scripts/vm').mkdir(parents=True);(self.root/'tests').mkdir();(self.root/'bin').mkdir()
         for name in ['run-guest.py','start-test.sh']:shutil.copyfile(ROOT/'scripts/vm'/name,self.root/'scripts/vm'/name)
         self.env=dict(os.environ,PATH=str(self.root/'bin')+':'+os.environ['PATH'])
+        self.command('gdbus','exit 0')
         self.command('systemctl',"printf 'XDG_SESSION_TYPE=wayland\\nXDG_CURRENT_DESKTOP=KDE\\n'")
         self.command('rpm-ostree',"printf '%s\\n' '{\"deployments\":[{\"booted\":true}]}'")
         (self.root/'setup.sh').write_text("printf 'setup stdout\\n'\nprintf 'setup stderr\\n' >&2\nexit 0\n")

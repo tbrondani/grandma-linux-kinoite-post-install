@@ -172,13 +172,13 @@
       "before": "Updates need an internet connection.",
       "steps": [
         "Save your work.",
-        "Open Updates from System.",
+        "Open Updates from System. Select System and applications.",
         "Review the available updates.",
         "Select Update All.",
         "Restart the computer if asked."
       ],
       "result": "Discover shows the update progress.",
-      "tip": "Use the normal restart option. Keep the power connected during updates."
+      "tip": "Use the normal restart option. Keep the power connected during updates. For the Grandma Linux manual and setup, select Grandma Linux setup and manual in Updates."
     },
     {
       "id": "help",

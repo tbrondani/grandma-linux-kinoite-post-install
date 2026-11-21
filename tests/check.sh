@@ -9,12 +9,21 @@ python3 tests/test_theme.py
 python3 tests/test_settings.py
 python3 tests/maps.py
 python3 tests/test_user_tools.py
+python3 tests/test_manual.py
+python3 tests/test_project_update.py
 python3 tests/test_vm_login.py
 python3 tests/test_vm_runner.py
 python3 tests/test_backup.py
 ./setup.sh --dry-run --lang=en >/dev/null
 ./setup.sh --dry-run --lang=pt-BR >/dev/null
 if ./setup.sh --invalid >/dev/null 2>&1; then exit 1; fi
+# Querying a version must not require a working graphical display.
+(
+    source scripts/common.sh
+    source scripts/system.sh
+    plasmashell() { [[ ${QT_QPA_PLATFORM:-} == offscreen ]] || return 134; printf 'plasmashell 6.8.3\n'; }
+    check_plasma_version
+)
 # Exercise existing and missing application paths without installing anything.
 ROOT=$PWD
 LANGUAGE=en

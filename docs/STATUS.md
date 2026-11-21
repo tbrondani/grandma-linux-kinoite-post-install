@@ -24,11 +24,13 @@ The initial installation path has been exercised on Fedora Kinoite 45 with Plasm
 - Per-item storage inventory and download estimates: see [Installation size](INSTALLATION-SIZE.md).
 
 - Local restic file backup, monthly timer, 12 monthly/3 yearly retention and recovery into new folders; see [Backup](BACKUP.md).
-- Offline bilingual User manual with task navigation, three-choice Help, support information and a Discover Updates shortcut; see [Help](HELP.md).
+- Offline bilingual User manual as a standalone HTML book: chapters, favorites, language switching, light/dark themes and text enlargement. Three-choice Help, support information and an Updates menu for Discover and stable project releases remain available; see [Help](HELP.md).
 
 ## Latest development VM results
 
 On 2026-11-21, the baseline deployment reached one Organic Maps compatibility failure. After updating catalogue/hash support and rebooting, setup and validation both exited 0; all 146 checks passed. Maria logged in automatically after reboot. The English and PT-BR manual pages were opened and visually checked in the desktop. Logs and execution JSON are saved in test-results. In the earlier development run, all 26 application startup probes passed with Se7en Aero. A KWallet prompt required user interaction during the run; this is not a fully unattended first-use acceptance test. Repeating setup preserved generated files, app inventory, and OSTree deployments. These probes do not prove every application's features work.
+
+The HTML manual update passed 147 read-only VM checks. Browser tests covered offline loading, favorites across browser restarts, language/theme persistence and 200% text reflow. The installed Brave Flatpak loaded the desktop HTML file without new permissions. The app-window launch was installed; final user visual acceptance remains pending.
 
 ## Pending before v0.1.0
 
@@ -61,3 +63,9 @@ Se7en Aero is installed directly from KDE Store. `data/themes.json` pins the fiv
 References: [Flatpak commands](https://docs.flatpak.org/en/latest/flatpak-command-reference.html), [rpm-ostree](https://github.com/coreos/rpm-ostree/blob/main/docs/administrator-handbook.md), [AeroThemePlasma installation](https://github.com/aeroshell-desktop/aerothemeplasma/blob/Plasma/6.8/INSTALL.md), [Plasma Login Manager](https://github.com/KDE/plasma-login-manager).
 
 The remote-support launcher requires Python D-Bus and GLib, installed through the system package stage. It observes the main RustDesk window through KWin and stops the sandbox when that window closes. It does not use xdotool. A compositor restart also stops support.
+
+The VM preflight queries the Plasma version with the offscreen Qt backend. The guest runner waits for both plasmashell and KWin before setup; a graphical startup race must not be reported as an unsupported Plasma version.
+
+After the Plasma preflight fix on 2026-11-21, the restored VM completed setup and validation with exit code 0 after the package deployment reboot. All 147 checks passed. Evidence: `test-results/plasma-retry-execution.json` and `test-results/plasma-retry-after-reboot.log` (local, ignored).
+
+The project updater passed a real installer run in the VM with a local release fixture: SHA256 validation, safe extraction, version recording, personal-file preservation and appearance/backup settings preservation. Live Plasma icon-position caches are excluded from the comparison. No stable GitHub release is published yet; production release download acceptance remains pending.

@@ -143,3 +143,23 @@ Deployment logs are saved under `test-results/` and remain outside Git:
 The runner copies guest logs even when setup fails before validation. A run that started before logging was added cannot provide its earlier console output retroactively. `python3 tests/test_vm_runner.py` verifies logging, failure propagation and the reboot boundary without changing a VM.
 
 Restoring the plain-layout test VM now also prepares its login configuration in the offline working copy with guestfish. The saved baseline is read-only during this operation. The host requires `guestfish` (libguestfs tools). The helper accepts only `.grandma-restore` images, checks the OSTree deployment layout, and labels the added configuration files for SELinux. Unsupported disk layouts stop before the live disk is replaced.
+
+The manual browser test is optional and requires Playwright in a separate test environment:
+
+```sh
+python3 tests/manual-browser.py
+```
+
+It opens a local file with network access disabled, checks chapter navigation, favorites across browser restarts, language/theme persistence, and text enlargement/reflow. Screenshots and results belong in test-results. Playwright and its test browser are not installed by setup. `tests/test_manual.py` also checks that a personal file is preserved and content cannot escape the embedded JSON.
+
+Project updates use stable GitHub release assets with a SHA256 digest. No stable release is published yet. The local release fixture test runs only in the test VM: `GRANDMA_TEST_VM=1 python3 tests/update-guest.py`. It uses the real updater and installer, checks version recording, and checks that appearance, backup settings and a personal file survive. It does not validate a published release download.
+
+Build a release package from a clean checkout with `python3 scripts/build-release.py v0.1.0 --output /tmp/grandma-release`. The package VERSION is set to the release version. Upload the archive as a release asset after release checks pass; the updater requires the GitHub asset SHA256 digest.
+
+To restore the clean baseline, install, then test a local project update in one run:
+
+```sh
+FRESH=1 TEST_UPDATE=1 bash scripts/vm/start-test.sh
+```
+
+The update fixture sets the test VM version to 0.1.0. This is test data, not a published release. The original clean baseline is preserved.

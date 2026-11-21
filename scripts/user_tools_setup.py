@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 from backup import Backup
+from manual import build as build_manual
 
 TOOLS={
  'grandma-help':('Help','Ajuda','help','help-browser'),
@@ -16,7 +17,7 @@ TOOLS={
  'grandma-backup':('Backup','Backup','backup','document-save'),
  'grandma-recover':('Recover Files','Recuperar arquivos','recover','document-revert'),
  'grandma-support-info':('Support information','Informações para suporte','info','dialog-information'),
- 'grandma-updates':('Updates','Atualizações',None,'system-software-update'),
+ 'grandma-updates':('Updates','Atualizações','updates','system-software-update'),
 }
 
 def managed(path,content):
@@ -45,14 +46,15 @@ def update_menu(config):
     path.write_text('<?xml version="1.0"?>\n<!-- Grandma Linux managed -->\n'+ET.tostring(root,encoding='unicode'))
 
 
-def install(root,dry_run=False):
+def install(root,dry_run=False,update=False):
     if dry_run:
         print('Install User manual, Help, Updates and monthly local backup with safe recovery.');return
     home=Path.home();config=Path(os.environ.get('XDG_CONFIG_HOME',home/'.config'))
     data=Path(os.environ.get('XDG_DATA_HOME',home/'.local/share'))
     base=home/'.local/libexec/grandma-linux';base.mkdir(parents=True,exist_ok=True)
-    for name in ['backup.py','user-tools.py']:
+    for name in ['backup.py','user-tools.py','project_update.py']:
         shutil.copyfile(root/'scripts'/name,base/name)
+    shutil.copyfile(root/'VERSION',base/'VERSION')
     # The support launcher is also installed by desktop.py. Copy it here so this
     # module can be installed independently during development.
     shutil.copyfile(root/'scripts/remote-support-session.py',base/'remote-support-session.py')
@@ -65,23 +67,27 @@ def install(root,dry_run=False):
     desktop=Path(subprocess.check_output(['xdg-user-dir','DESKTOP'],text=True).strip())
     if not desktop.is_absolute() or desktop==home:raise ValueError('Configure the desktop folder first.')
     desktop.mkdir(parents=True,exist_ok=True)
+    language='pt-BR' if os.environ.get('LANG','').startswith('pt_BR') or os.environ.get('LANGUAGE','').startswith('pt_BR') else 'en'
+    build_manual(root,desktop/'.grandma-linux-manual.html',language)
     for app in ['grandma-help','grandma-guide']:
         source=data/'applications'/f'{app}.desktop'
+        if update and not (desktop/source.name).exists():continue
         managed(desktop/source.name,source.read_text().removeprefix('# Grandma Linux managed\n'))
         (desktop/source.name).chmod(0o755)
-    backup=Backup();backup.configure_local()
-    unit=config/'systemd/user'
-    script=str(base/'user-tools.py').replace('%','%%').replace('"','\\"')
-    managed(unit/'grandma-backup.service',f'[Unit]\nDescription=Grandma Linux personal file backup\nConditionPathExists={backup.config_path}\n\n[Service]\nType=oneshot\nExecStart=python3 "{script}" scheduled-backup\nNice=10\nIOSchedulingClass=idle\nUMask=0077\nTimeoutStartSec=infinity\n')
-    managed(unit/'grandma-backup.timer','[Unit]\nDescription=Grandma Linux monthly backup\n\n[Timer]\nOnCalendar=monthly\nPersistent=true\nRandomizedDelaySec=30m\n\n[Install]\nWantedBy=timers.target\n')
-    if not backup.status_path.exists() or not json.loads(backup.status_path.read_text()).get('last_success'):
-        print('Creating the first local file backup...',flush=True);backup.run()
-    subprocess.run(['systemctl','--user','daemon-reload'],check=True)
-    subprocess.run(['systemctl','--user','enable','--now','grandma-backup.timer'],check=True)
+    if not update:
+        backup=Backup();backup.configure_local()
+        unit=config/'systemd/user'
+        script=str(base/'user-tools.py').replace('%','%%').replace('"','\\"')
+        managed(unit/'grandma-backup.service',f'[Unit]\nDescription=Grandma Linux personal file backup\nConditionPathExists={backup.config_path}\n\n[Service]\nType=oneshot\nExecStart=python3 "{script}" scheduled-backup\nNice=10\nIOSchedulingClass=idle\nUMask=0077\nTimeoutStartSec=infinity\n')
+        managed(unit/'grandma-backup.timer','[Unit]\nDescription=Grandma Linux monthly backup\n\n[Timer]\nOnCalendar=monthly\nPersistent=true\nRandomizedDelaySec=30m\n\n[Install]\nWantedBy=timers.target\n')
+        if not backup.status_path.exists() or not json.loads(backup.status_path.read_text()).get('last_success'):
+            print('Creating the first local file backup...',flush=True);backup.run()
+        subprocess.run(['systemctl','--user','daemon-reload'],check=True)
+        subprocess.run(['systemctl','--user','enable','--now','grandma-backup.timer'],check=True)
     update_menu(config)
     subprocess.run(['update-desktop-database',str(data/'applications')],check=True)
     subprocess.run(['kbuildsycoca6','--noincremental'],check=True)
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--dry-run',action='store_true');args=parser.parse_args()
-    install(Path(__file__).resolve().parent.parent,args.dry_run)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--dry-run',action='store_true');parser.add_argument('--update',action='store_true');args=parser.parse_args()
+    install(Path(__file__).resolve().parent.parent,args.dry_run,args.update)

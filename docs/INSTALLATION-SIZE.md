@@ -15,6 +15,8 @@ Development VM measurement, 2026-11-16. Use decimal GB below. These values are n
 
 The 2026-11-21 deployment uses map catalogue 261110; the table above records the earlier catalogue.
 
+The self-contained HTML manual is about 32 kB. It uses the existing browser and adds no production runtime, server or frontend dependency. Browser automation tools are test-only and excluded from setup.
+
 The first VM backup used 1.16 MB for 13 small files (84 kB of source data). Backup storage depends on personal files and retained versions; it is not included in the earlier directory total.
 
 Map and dictionary data are inside app data directories. Do not add them to the directory totals again. Argos model archives are removed after installation.

@@ -37,7 +37,13 @@ for attempt in range(120):
                 parsed = shlex.split(value)
                 env[key] = parsed[0] if len(parsed) == 1 else value
     if env.get('XDG_SESSION_TYPE') == 'wayland' and 'KDE' in env.get('XDG_CURRENT_DESKTOP', ''):
-        break
+        try:
+            shell = subprocess.run(['systemctl','--user','is-active','--quiet','plasma-plasmashell.service'],env=env,capture_output=True,timeout=5)
+            compositor = subprocess.run(['gdbus','call','--session','--dest','org.kde.KWin','--object-path','/KWin','--method','org.freedesktop.DBus.Peer.Ping'],env=env,capture_output=True,timeout=5)
+            if shell.returncode == 0 and compositor.returncode == 0:
+                break
+        except subprocess.TimeoutExpired:
+            pass
     if attempt % 10 == 0:
         progress('Waiting for the KDE Wayland desktop session...')
     time.sleep(2)
@@ -61,6 +67,19 @@ if setup.returncode == 0 and deployments and not deployments[0].get('booted', Fa
     result.update(status='reboot-required', phase='reboot-required', reboot_required=True, finished_at=datetime.now(timezone.utc).isoformat())
     save_result()
     sys.exit(75)
+if setup.returncode == 0 and env.get('GRANDMA_TEST_UPDATE') == '1':
+    result['phase'] = 'project-update-test'
+    save_result()
+    with subprocess.Popen(['python3', str(root / 'tests/update-guest.py')], env=env,
+                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as update:
+        for line in update.stdout:
+            progress(line.rstrip('\n'))
+        update.wait()
+    result['update_exit_code'] = update.returncode
+    if update.returncode:
+        result.update(status='failed', phase='project-update-failed', finished_at=datetime.now(timezone.utc).isoformat())
+        save_result()
+        sys.exit(update.returncode)
 result['phase'] = 'validation'
 save_result()
 with (root / 'validation-report.json').open('w') as report:

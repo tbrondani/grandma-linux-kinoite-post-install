@@ -135,15 +135,20 @@ model_root=Path.home()/'.local/share/argos-translate/packages'
 models=[json.loads(p.read_text()) for p in model_root.glob('*/metadata.json')]
 for expected in json.loads((root/'data/translation-models.json').read_text()):
     record('Translator: '+expected['code'],any(all(p.get(k)==expected[k] for k in ['from_code','to_code','package_version']) for p in models))
+menu_path=config/'menus/plasma-applications.menu'
+menu_text=menu_path.read_text() if menu_path.is_file() else ''
 for app in ['grandma-help','grandma-guide','grandma-backup','grandma-recover','grandma-support-info','grandma-updates']:
     path=Path.home()/'.local/share/applications'/f'{app}.desktop'
     record(app+': launcher',path.is_file())
-    record(app+': task menu',path.name in (config/'menus/plasma-applications.menu').read_text())
+    record(app+': task menu',path.name in menu_text)
 for language in ['en','pt-BR']:
     manual_path=Path.home()/'.local/libexec/grandma-linux/guides'/f'manual.{language}.json'
     record('User manual: '+language,manual_path.is_file())
     if manual_path.is_file():
         record('User manual topics: '+language,len(json.loads(manual_path.read_text()).get('topics',[]))==16)
+desktop_folder=command('xdg-user-dir','DESKTOP')
+manual_html=Path(desktop_folder.stdout.strip())/'.grandma-linux-manual.html' if desktop_folder is not None else None
+record('User manual: standalone HTML',manual_html is not None and manual_html.is_file() and 'manual-data' in manual_html.read_text())
 from backup import Backup
 local_backup=Backup()
 record('Local backup: configured',local_backup.config_path.is_file())

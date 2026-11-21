@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!-- Grandma Linux managed manual -->
+<html lang="@@LANG@@" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>Grandma Linux — Manual</title>
+<style>@@CSS@@</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="brand"><span class="brand-icon" aria-hidden="true">▤</span><div><strong>Grandma Linux</strong><span id="book-label"></span></div></div>
+  <div class="preferences" role="group" aria-label="Reading preferences" id="preferences">
+    <div class="text-size"><button id="smaller" type="button">A−</button><button id="larger" type="button">A+</button></div>
+    <label class="sr-only" for="language" id="language-label"></label>
+    <select id="language"><option value="pt-BR">Português (Brasil)</option><option value="en">English</option></select>
+    <button id="theme-toggle" class="theme-button" type="button" aria-pressed="false"></button>
+  </div>
+</header>
+<p id="storage-warning" class="storage-warning" role="status" hidden></p>
+<main class="book" id="book">
+  <aside class="contents" aria-labelledby="contents-heading">
+    <div class="bookplate"><span class="eyebrow" id="edition-label"></span><h1 id="contents-heading"></h1><p id="cover-note"></p></div>
+    <div class="filters" id="filters" role="group" aria-label="Chapters">
+      <button type="button" id="show-all" aria-pressed="true"></button>
+      <button type="button" id="show-favorites" aria-pressed="false"></button>
+    </div>
+    <nav id="chapter-nav" aria-label="Chapters"><ol id="chapters"></ol><p id="empty-favorites" hidden></p></nav>
+    <p class="offline-note" id="offline-note"></p>
+  </aside>
+  <section class="paper" aria-labelledby="chapter-title">
+    <div class="page-top"><span class="eyebrow" id="chapter-number"></span><button id="favorite" type="button" aria-pressed="false"></button></div>
+    <article id="article" tabindex="-1">
+      <h2 id="chapter-title"></h2>
+      <p id="before" class="before"></p>
+      <ol id="steps" class="steps"></ol>
+      <section class="result-box" aria-labelledby="result-label"><h3 id="result-label"></h3><p id="result"></p></section>
+      <p id="tip" class="tip"></p>
+    </article>
+    <footer class="page-footer"><button id="previous" type="button"></button><span id="page-count" aria-live="polite"></span><button id="next" type="button"></button></footer>
+  </section>
+</main>
+<footer class="colophon" id="colophon"></footer>
+<noscript>Este manual precisa de JavaScript habilitado no navegador. / Enable JavaScript in your browser to use this manual.</noscript>
+<script type="application/json" id="manual-data">@@CONTENT@@</script>
+<script>@@JS@@</script>
+</body>
+</html>

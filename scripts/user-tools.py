@@ -96,37 +96,53 @@ def support_information(backup):
     path.write_text('\n'.join(lines)+'\n');path.chmod(0o600)
     view(path,text('Support information','Informações para suporte'))
 
-def render_manual_topic(manual, topic):
-    lines=[topic['title'], '']
-    if topic.get('before'):lines.extend([topic['before'], ''])
-    lines.extend(f"{number}. {step}" for number,step in enumerate(topic['steps'],1))
-    lines.extend(['',topic['result']])
-    if topic.get('tip'):lines.extend(['',topic['tip']])
-    lines.extend(['',manual['back']])
-    return '\n'.join(lines)+'\n'
-
-
 def guide():
-    language='pt-BR' if PT else 'en'
-    while True:
-        manual=json.loads((BASE/'guides'/f'manual.{language}.json').read_text())
-        choices=['__language__','English' if language=='pt-BR' else 'Português (Brasil)']
-        for topic in manual['topics']:choices.extend([topic['id'],topic['title']])
-        try:
-            selected=dialog('--menu',manual['prompt'],*choices,title=manual['title'])
-        except Cancelled:
-            return
-        if selected=='__language__':
-            language='en' if language=='pt-BR' else 'pt-BR'
-            continue
-        topic=next(topic for topic in manual['topics'] if topic['id']==selected)
-        # kdialog reads a plain local file. No browser permissions, internet,
-        # Python GUI environment or permanent temporary files are needed.
-        with tempfile.TemporaryDirectory(prefix='grandma-manual-') as folder:
-            page=Path(folder)/'page.txt'
-            page.write_text(render_manual_topic(manual,topic),encoding='utf-8')
-            try:view(page,manual['title']+' — '+topic['title'])
-            except Cancelled:pass
+    desktop=Path(subprocess.check_output(['xdg-user-dir','DESKTOP'],text=True).strip())
+    if not desktop.is_absolute() or desktop==Path.home():
+        raise RuntimeError(text('Configure the desktop folder first.','Configure a pasta da área de trabalho primeiro.'))
+    manual=desktop/'.grandma-linux-manual.html'
+    if not manual.is_file():
+        raise RuntimeError(text('The manual is missing. Run Grandma Linux setup again.','O manual não foi encontrado. Execute a configuração Grandma Linux novamente.'))
+    # The existing Brave Flatpak can read xdg-desktop. No new filesystem
+    # permission, server or additional application is needed for this file.
+    native=shutil.which('brave-browser')
+    if native:
+        subprocess.Popen([native,'--app='+manual.as_uri(),'--window-size=1200,820'],start_new_session=True)
+    elif shutil.which('flatpak') and subprocess.run(['flatpak','info','com.brave.Browser'],capture_output=True).returncode==0:
+        subprocess.Popen(['flatpak','run','com.brave.Browser','--app='+manual.as_uri(),'--window-size=1200,820'],start_new_session=True)
+    else:
+        subprocess.run(['xdg-open',manual.as_uri()],check=True)
+
+
+def updates():
+    from project_update import check_release, apply, UpdateError
+    choice=dialog('--menu',text('What do you want to update?','O que você quer atualizar?'),
+                  'system',text('System and applications','Sistema e aplicativos'),
+                  'project',text('Grandma Linux setup and manual','Configuração e manual Grandma Linux'))
+    if choice=='system':
+        subprocess.Popen(['plasma-discover','--mode','update']);return
+    dialog('--passivepopup',text('Checking for updates…','Buscando atualizações…'),'5')
+    try:
+        release=check_release()
+        if release is None:
+            message('No stable Grandma Linux release is available yet.','Ainda não há uma versão estável do Grandma Linux disponível.');return
+        if not release['available']:
+            message('Grandma Linux is up to date.','O Grandma Linux está atualizado.');return
+        dialog('--yesno',text('Install Grandma Linux ','Instalar Grandma Linux ')+release['tag']+'?\n'+text(
+            'Keep this window open. Your wallpaper and desktop settings are preserved.',
+            'Aguarde até concluir. Seu papel de parede e as configurações da área de trabalho serão preservados.'))
+        dialog('--passivepopup',text('Updating Grandma Linux. Please wait.','Atualizando Grandma Linux. Aguarde.'),'10')
+        code=apply(release,'pt-BR' if PT else 'en')
+        if code==75:
+            message('Restart the computer, then open Updates and try again.','Reinicie o computador. Depois abra Atualizações e tente novamente.')
+        else:message('Grandma Linux update complete.','Atualização do Grandma Linux concluída.')
+    except UpdateError as error:
+        messages={
+            'network':('Cannot connect to GitHub. Check your internet connection.','Não foi possível acessar o GitHub. Verifique a conexão com a internet.'),
+            'busy':('An update is already running.','Uma atualização já está em andamento.'),
+        }
+        en,pt=messages.get(str(error),('The update could not be completed. Try again later. See ~/.local/state/grandma-linux/project-update.log.','Não foi possível concluir a atualização. Tente novamente mais tarde. Consulte ~/.local/state/grandma-linux/project-update.log.'))
+        dialog('--error',text(en,pt))
 
 
 def help_menu(backup):
@@ -138,11 +154,11 @@ def help_menu(backup):
     elif choice=='remote':subprocess.Popen([sys.executable,str(BASE/'remote-support-session.py')])
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=['backup','recover','guide','help','info','scheduled-backup']);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=['backup','recover','guide','help','info','scheduled-backup','updates']);args=parser.parse_args()
     backup=Backup()
     try:
         if args.action=='scheduled-backup':backup.run()
-        else:{'backup':backup_menu,'recover':recover,'guide':lambda b:guide(),'help':help_menu,'info':support_information}[args.action](backup)
+        else:{'backup':backup_menu,'recover':recover,'guide':lambda b:guide(),'help':help_menu,'info':support_information,'updates':lambda b:updates()}[args.action](backup)
     except Cancelled:pass
     except Exception as error:
         if args.action=='scheduled-backup':
