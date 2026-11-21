@@ -30,16 +30,16 @@ The initial installation path has been exercised on Fedora Kinoite 45 with Plasm
 
 On 2026-11-21, the baseline deployment reached one Organic Maps compatibility failure. After updating catalogue/hash support and rebooting, setup and validation both exited 0; all 146 checks passed. Maria logged in automatically after reboot. The English and PT-BR manual pages were opened and visually checked in the desktop. Logs and execution JSON are saved in test-results. In the earlier development run, all 26 application startup probes passed with Se7en Aero. A KWallet prompt required user interaction during the run; this is not a fully unattended first-use acceptance test. Repeating setup preserved generated files, app inventory, and OSTree deployments. These probes do not prove every application's features work.
 
-The HTML manual update passed 147 read-only VM checks. Browser tests covered offline loading, favorites across browser restarts, language/theme persistence and 200% text reflow. The installed Brave Flatpak loaded the desktop HTML file without new permissions. The app-window launch was installed; final user visual acceptance remains pending.
+The HTML manual update passed 147 read-only VM checks. Browser tests covered offline loading, favorites across browser restarts, language/theme persistence and 200% text reflow. The installed Brave Flatpak loaded the desktop HTML file without new permissions. The maintainer approved the desktop visual review after the clean deployment and update test on 2026-11-21.
 
 ## Pending before v0.1.0
 
-- Verify the complete clean restore with the new offline login preparation. The saved baseline is preserved; restore now patches only its working copy. The helper and SELinux labels were checked on a disposable copy of the actual baseline.
+- Repeat hardware-specific acceptance on the target computer. The 2026-11-21 clean baseline restore, offline login preparation, installation, reboot/resume and local update fixture all passed; the saved baseline was preserved.
 
 
 - Recreate a VM from installation media to qualify provisioning. The latest setup run started from the saved clean Fedora base, with SSH and automatic login prepared first.
 - Physical hardware, camera, microphone, audio, suspend, and networking tests.
-- Visual review of the menu, icons, panel, wallpaper, screenshots, and desktop behavior.
+- Desktop visual review approved by the maintainer in the VM; verify scaling and readability on the target display.
 - First-use KWallet prompts under test VM auto-login. Keep credential storage enabled; startup probes do not prove a prompt-free first launch.
 - Brave feature reduction and end-to-end web app tests.
 - Physical-disk reinstall and off-device copy checks for local backup; see BACKUP.md. Local copy, retention, safe restore and a simulated new installation have passed in the VM.
@@ -47,7 +47,7 @@ The HTML manual update passed 147 read-only VM checks. Browser tests covered off
 - Local AI deployment and resource tests.
 - Portugal maps: four files downloaded and verified against the installed catalogue. Offline rendering, routing and search still need a visual check. Select Brazilian states before adding their downloads; see OFFLINE.md.
 - Complete upstream license inventory and translated contributor guides.
-- Windows 10 preset and final acceptance of the visual direction.
+- Optional Windows 10-style preset. The current Se7en Aero appearance has been approved.
 
 ## Backlog
 
@@ -69,3 +69,5 @@ The VM preflight queries the Plasma version with the offscreen Qt backend. The g
 After the Plasma preflight fix on 2026-11-21, the restored VM completed setup and validation with exit code 0 after the package deployment reboot. All 147 checks passed. Evidence: `test-results/plasma-retry-execution.json` and `test-results/plasma-retry-after-reboot.log` (local, ignored).
 
 The project updater passed a real installer run in the VM with a local release fixture: SHA256 validation, safe extraction, version recording, personal-file preservation and appearance/backup settings preservation. Live Plasma icon-position caches are excluded from the comparison. No stable GitHub release is published yet; production release download acceptance remains pending.
+
+Checkpoint before backlog work: the latest clean deployment (`deploy-20261121T230133Z-F7bPl9`) passed all 147 checks and the local update fixture. The Stanza SyntaxWarning did not interrupt installation. The maintainer approved the visual result.
