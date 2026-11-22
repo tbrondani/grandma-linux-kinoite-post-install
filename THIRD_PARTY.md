@@ -65,3 +65,7 @@ The pinned 7 Icons package replaces the Win11 download for new setup runs. Its `
 ## Reading font
 
 Atkinson Hyperlegible Next is by the Atkinson Hyperlegible Next Project Authors / Braille Institute, under SIL Open Font License 1.1. `data/reading-fonts.json` pins four unchanged TTF files and OFL.txt from [upstream revision 7925f50](https://github.com/googlefonts/atkinson-hyperlegible-next/tree/7925f50f649b3813257faf2f4c0b381011f434f1). The font and license are installed together in the user's font directory. Font binaries are not bundled in this repository.
+
+## Release automation
+
+[Release Please Action](https://github.com/googleapis/release-please-action) and [Release Please](https://github.com/googleapis/release-please) are Apache-2.0 projects by Google. The workflow references the action at a pinned commit; upstream code is not bundled here.
