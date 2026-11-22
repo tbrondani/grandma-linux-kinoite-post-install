@@ -12,7 +12,7 @@ A post-install setup project for Fedora Kinoite and KDE Plasma. It aims to make 
 ./setup.sh --dry-run --lang=en
 ```
 
-The preview makes no changes. For development testing on a disposable Kinoite VM, run `./setup.sh --lang=en` as your desktop user. Reboot and run it again if requested. It installs apps and games and may request system authorization. It does not yet configure the full desktop.
+The preview makes no changes. For development testing on a disposable Kinoite VM, run `./setup.sh --lang=en` as your desktop user. Reboot and run it again if requested. It installs apps and games and may request system authorization. It configures the curated desktop described in [development status](docs/STATUS.md).
 
 ## Target platform
 
@@ -46,3 +46,7 @@ Remove `--dry-run` to install in a test VM. The installer downloads an archive a
 To use a published version, replace `main` in the URL with its tag and pass `GRANDMA_REF=vX.Y.Z` to Bash. No tested release exists yet.
 
 After setup, open **Help** or **User manual** on the desktop. See [local backup and recovery](docs/BACKUP.md).
+
+## Updates
+
+Open **Updates** on the desktop or in **System**. Choose **Grandma Linux setup and manual** for a stable project release, or **System and applications** for Discover. See [Updates](docs/UPDATES.md) and [release preparation](docs/RELEASING.md).

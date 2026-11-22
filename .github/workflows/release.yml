@@ -1,0 +1,45 @@
+name: Prepare release draft
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Stable version, for example v0.1.0'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  draft:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: grandma-release-draft
+      cancel-in-progress: false
+    env:
+      RELEASE_TAG: ${{ inputs.version }}
+      RELEASE_OUTPUT: ${{ runner.temp }}/grandma-release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run checks
+        run: bash tests/check.sh
+      - name: Build verified update asset
+        run: python3 scripts/build-release.py "$RELEASE_TAG" --output "$RELEASE_OUTPUT"
+      - name: Create draft for maintainer review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag_status=0
+          git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1 || tag_status=$?
+          case "$tag_status" in
+            0) echo "This version tag already exists. Choose a new version." >&2; exit 1 ;;
+            2) ;;
+            *) echo "Could not check the remote version tag." >&2; exit "$tag_status" ;;
+          esac
+          gh release create "$RELEASE_TAG" \
+            --target "$GITHUB_SHA" --draft --title "Grandma Linux $RELEASE_TAG" \
+            --notes-file docs/RELEASE-NOTES.md \
+            "$RELEASE_OUTPUT/grandma-linux-$RELEASE_TAG.tar.gz" \
+            "$RELEASE_OUTPUT/grandma-linux-$RELEASE_TAG.tar.gz.sha256"

@@ -46,3 +46,7 @@ Remova `--dry-run` para instalar em uma VM de testes. O instalador baixa um arqu
 Para usar uma versão publicada, troque `main` pela tag na URL e passe `GRANDMA_REF=vX.Y.Z` ao Bash. Ainda não há release testada.
 
 Após a configuração, abra **Ajuda** ou **Manual de uso** na área de trabalho. Veja [backup local e recuperação](BACKUP.pt-BR.md).
+
+## Atualizações
+
+Abra **Atualizações** na área de trabalho ou em **Sistema**. Escolha **Configuração e manual Grandma Linux** para atualizar o projeto, ou **Sistema e aplicativos** para abrir o Discover. Veja [como atualizar](UPDATES.pt-BR.md).

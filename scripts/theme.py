@@ -136,3 +136,10 @@ def apply_win7_icons(data):
     parser['Icon Theme']['Inherits']='breeze,hicolor'
     with path.open('w') as output:parser.write(output,space_around_delimiters=False)
     subprocess.run(['kwriteconfig6','--notify','--file','kdeglobals','--group','Icons','--key','Theme','Windows-7-1.0'],check=True)
+
+
+if __name__=='__main__':
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--dry-run',action='store_true');args=parser.parse_args()
+    if args.dry_run:print('Install pinned theme assets without selecting a new appearance.')
+    else:install(Path(__file__).resolve().parents[1],Path(os.environ.get('XDG_DATA_HOME',Path.home()/'.local/share')))

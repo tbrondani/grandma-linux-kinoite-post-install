@@ -12,6 +12,7 @@ python3 tests/maps.py
 python3 tests/test_user_tools.py
 python3 tests/test_manual.py
 python3 tests/test_project_update.py
+python3 tests/test_release.py
 python3 tests/test_vm_login.py
 python3 tests/test_vm_runner.py
 python3 tests/test_backup.py
@@ -54,4 +55,7 @@ rpm() { return 1; }
 run() { printf '%s\n' "$*"; }
 result=$(install_system; printf 'ERROR: continued after package installation\n')
 [[ $result == *'rpm-ostree install vim-enhanced restic'* && $result != *'ERROR:'* ]]
+code=0
+( UPGRADE=1; install_system ) >/dev/null || code=$?
+[[ $code == 75 ]] || { echo 'Update package stage did not request a reboot'; exit 1; }
 printf 'PASS: syntax, options, previews, duplicate handling, package reboot boundary\n'

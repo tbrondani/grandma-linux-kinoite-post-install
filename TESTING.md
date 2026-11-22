@@ -162,8 +162,16 @@ To restore the clean baseline, install, then test a local project update in one 
 FRESH=1 TEST_UPDATE=1 bash scripts/vm/start-test.sh
 ```
 
-The update fixture sets the test VM version to 0.1.0. This is test data, not a published release. The original clean baseline is preserved.
+The update fixture uses the next patch number as test data, then restores the source version marker so it cannot hide the first real release. The original clean baseline is preserved.
 
 Reading presets: in the VM, compare System → Reading comfort at 12 and 14 pt, then restore. Verify unrelated settings and original font/pointer keys survive. `tests/test_reading.py` covers first-original preservation, repeated selection, missing fonts, checksum failures and refusal to overwrite a modified font file. Physical readability still needs the intended reader and display.
 
 The 7 Icons ZIP contains symbolic aliases. `tests/test_theme.py` checks that aliases resolve to their original icon files and that escaping links are rejected. The installer keeps missing-icon fallback on Breeze; it does not execute upstream scripts.
+
+## Project updater acceptance
+
+The project update tests include malformed release metadata, incorrect checksums, unsafe archives, concurrent operations, failed-install retry, same-boot restart protection and cached-package resume after a new boot. `tests/test_release.py` checks package version, source revision and dirty-checkout rejection.
+
+For the real reboot boundary in the disposable VM, run `GRANDMA_TEST_VM=1 python3 tests/update-reboot-guest.py prepare`, reboot, then run the same command with `resume`. This fixture stops its setup shim once with exit 75; after the real reboot it invokes the installed `grandma-update --apply --yes` command and the real setup. It checks reuse of the saved package, completion and cleanup. It does not change native packages to induce the reboot and does not use a published release.
+
+The release workflow creates a draft on main only; it has not been executed from the development branch. Review [release preparation](docs/RELEASING.md) before publication. Public GitHub asset download acceptance remains pending the first published release.

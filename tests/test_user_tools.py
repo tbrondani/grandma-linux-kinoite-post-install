@@ -88,6 +88,15 @@ class UserTools(unittest.TestCase):
             self.assertIn('manual-data',(desktop/'.grandma-linux-manual.html').read_text())
             backup.run.assert_not_called()
 
+    def test_update_ui_resumes_the_saved_release(self):
+        import project_update
+        release={'available':True,'tag':'v0.2.0'}
+        with patch.object(tools,'dialog',side_effect=['project','']),patch.object(tools,'message') as message,patch.object(tools,'UpdateProgress') as progress,patch.object(project_update,'installed_version',return_value='0.1.0'),patch.object(project_update,'available_update',return_value=(release,True)),patch.object(project_update,'apply',return_value=75) as apply:
+            tools.updates()
+            self.assertEqual(apply.call_args.args[0],release)
+            self.assertIs(apply.call_args.args[2],progress.return_value.__enter__.return_value)
+            self.assertIn('Restart',message.call_args.args[0])
+
     def test_support_report_does_not_include_paths_credentials_or_host_name(self):
         with tempfile.TemporaryDirectory() as folder:
             backup=tools.Backup(config_dir=Path(folder)/'config',state_dir=Path(folder)/'state')

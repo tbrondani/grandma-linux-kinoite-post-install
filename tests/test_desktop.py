@@ -33,6 +33,13 @@ class Launchers(unittest.TestCase):
                 desktop.configure(root)
                 first = (root / 'Desktop/grandma-com.brave.Browser.desktop').read_bytes()
                 desktop.configure(root)
+            with patch.object(Path, 'home', return_value=root), patch.dict('os.environ', {'XDG_DATA_HOME': str(data)}), patch.object(desktop, 'desktop_dir', return_value=root / 'Desktop'), patch.object(desktop.subprocess, 'run'):
+                removed=root/'Desktop/grandma-com.brave.Browser.desktop';removed.unlink()
+                existing=(native/'com.brave.Browser.desktop').read_text()
+                desktop.configure(root,update=True)
+                self.assertFalse(removed.exists())
+                self.assertEqual((native/'com.brave.Browser.desktop').read_text(),existing)
+                removed.write_bytes(first)
             self.assertEqual(first, (root / 'Desktop/grandma-com.brave.Browser.desktop').read_bytes())
             parser = configparser.ConfigParser(interpolation=None)
             parser.read(native / 'com.brave.Browser.desktop')

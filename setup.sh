@@ -29,7 +29,12 @@ desktop_args=()
 if (( DRY_RUN )); then desktop_args+=(--dry-run); fi
 python3 "$ROOT/scripts/reading.py" "${desktop_args[@]}"
 python3 "$ROOT/scripts/translator.py" "${desktop_args[@]}"
-if (( ! UPGRADE )); then python3 "$ROOT/scripts/desktop.py" "${desktop_args[@]}"; fi
+if (( UPGRADE )); then
+    python3 "$ROOT/scripts/desktop.py" "${desktop_args[@]}" --update
+    python3 "$ROOT/scripts/theme.py" "${desktop_args[@]}"
+else
+    python3 "$ROOT/scripts/desktop.py" "${desktop_args[@]}"
+fi
 if (( ! UPGRADE )); then
     python3 "$ROOT/scripts/settings.py" "${desktop_args[@]}"
 else

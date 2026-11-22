@@ -68,7 +68,7 @@ def desktop_dir():
     return path
 
 
-def configure(root, dry_run=False):
+def configure(root, dry_run=False, update=False):
     data = Path(os.environ.get('XDG_DATA_HOME', str(Path.home() / '.local/share')))
     search = [data / 'applications', Path.home() / '.local/share/flatpak/exports/share/applications',
               Path('/var/lib/flatpak/exports/share/applications'), Path('/usr/share/applications')]
@@ -83,6 +83,8 @@ def configure(root, dry_run=False):
         source = next((p for p in candidates if p.is_file()), None)
         if source is None:
             raise RuntimeError(f'No installed desktop entry for {app_id}')
+        if update and (destination/source.name).exists():
+            continue
         parser = configparser.ConfigParser(interpolation=None, strict=False)
         parser.optionxform = str
         parser.read(source)
@@ -120,7 +122,7 @@ def configure(root, dry_run=False):
                 raise RuntimeError(f'Refusing to overwrite personal shortcut: {shortcut}')
             shutil.copyfile(target, shortcut)
             shortcut.chmod(0o755)
-    if not dry_run:
+    if not dry_run and not update:
         # A web-app launcher reuses the installed browser invocation (including Flatpak flags).
         browser = destination / 'com.brave.Browser.desktop'
         parser = configparser.ConfigParser(interpolation=None, strict=False)
@@ -150,5 +152,5 @@ def configure(root, dry_run=False):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
-    args.add_argument('--dry-run', action='store_true')
-    configure(Path(__file__).resolve().parent.parent, args.parse_args().dry_run)
+    args.add_argument('--dry-run', action='store_true');args.add_argument('--update',action='store_true')
+    options=args.parse_args();configure(Path(__file__).resolve().parent.parent, options.dry_run,options.update)

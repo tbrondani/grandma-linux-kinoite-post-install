@@ -56,6 +56,10 @@ def install(root,dry_run=False,update=False):
     for name in ['backup.py','user-tools.py','project_update.py','reading.py']:
         shutil.copyfile(root/'scripts'/name,base/name)
     shutil.copyfile(root/'VERSION',base/'VERSION')
+    binary=home/'.local/bin/grandma-update';binary.parent.mkdir(parents=True,exist_ok=True)
+    command='#!/usr/bin/env python3\n# Grandma Linux managed\nimport runpy,sys\nsys.path.insert(0,'+repr(str(base))+')\nrunpy.run_path('+repr(str(base/'project_update.py'))+',run_name="__main__")\n'
+    if binary.exists() and '# Grandma Linux managed' not in binary.read_text():raise RuntimeError('Refusing to replace a personal command: '+str(binary))
+    temporary=binary.with_suffix('.partial');temporary.write_text(command);temporary.chmod(0o755);temporary.replace(binary)
     # The support launcher is also installed by desktop.py. Copy it here so this
     # module can be installed independently during development.
     shutil.copyfile(root/'scripts/remote-support-session.py',base/'remote-support-session.py')
@@ -70,7 +74,7 @@ def install(root,dry_run=False,update=False):
     desktop.mkdir(parents=True,exist_ok=True)
     language='pt-BR' if os.environ.get('LANG','').startswith('pt_BR') or os.environ.get('LANGUAGE','').startswith('pt_BR') else 'en'
     build_manual(root,desktop/'.grandma-linux-manual.html',language)
-    for app in ['grandma-help','grandma-guide']:
+    for app in ['grandma-help','grandma-guide','grandma-updates']:
         source=data/'applications'/f'{app}.desktop'
         if update and not (desktop/source.name).exists():continue
         managed(desktop/source.name,source.read_text().removeprefix('# Grandma Linux managed\n'))

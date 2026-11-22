@@ -178,7 +178,7 @@
         "Reinicie o computador se solicitado."
       ],
       "result": "O Discover mostrará o andamento das atualizações.",
-      "tip": "Use a opção normal de reiniciar. Mantenha o computador ligado à energia durante as atualizações. Para atualizar o manual e a configuração do projeto, selecione Configuração e manual Grandma Linux em Atualizações."
+      "tip": "Para atualizar o projeto, selecione Configuração e manual Grandma Linux em Atualizações. Confirme a versão oferecida. Se precisar reiniciar, abra a mesma opção para concluir. Mantenha o computador ligado à energia."
     },
     {
       "id": "help",

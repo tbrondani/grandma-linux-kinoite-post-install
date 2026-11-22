@@ -37,20 +37,25 @@ if marker.exists():raise SystemExit('Test marker already exists; refusing to rep
 marker.write_text('Keep this personal file.\n')
 try:
     with tempfile.TemporaryDirectory(prefix='grandma-update-fixture-') as folder:
-        folder=Path(folder);archive=folder/'release.tar.gz';tag='v0.1.0'
+        folder=Path(folder);archive=folder/'release.tar.gz'
+        previous=update.version_tuple(update.installed_version()) or (0,1,0)
+        version='.'.join(map(str,(*previous[:2],previous[2]+1)));tag='v'+version
         with tarfile.open(archive,'w:gz') as tar:
             for directory in ['scripts','data','docs','assets']:
                 tar.add(ROOT/directory,arcname='grandma-linux-'+tag+'/'+directory,filter=lambda member: None if '__pycache__' in member.name else member)
             tar.add(ROOT/'setup.sh',arcname='grandma-linux-'+tag+'/setup.sh')
-            data=b'0.1.0\n';member=tarfile.TarInfo('grandma-linux-'+tag+'/VERSION');member.size=len(data);tar.addfile(member,io.BytesIO(data))
-        release=dict(available=True,tag=tag,current=update.installed_version(),url='https://fixture.invalid/release',size=archive.stat().st_size,sha256=hashlib.sha256(archive.read_bytes()).hexdigest())
+            data=(version+'\n').encode();member=tarfile.TarInfo('grandma-linux-'+tag+'/VERSION');member.size=len(data);tar.addfile(member,io.BytesIO(data))
+        release=dict(available=True,tag=tag,current=update.installed_version(),url=f'https://github.com/{update.REPOSITORY}/releases/download/{tag}/grandma-linux-{tag}.tar.gz',size=archive.stat().st_size,sha256=hashlib.sha256(archive.read_bytes()).hexdigest())
+        metadata=dict(tag_name=tag,assets=[dict(name='grandma-linux-'+tag+'.tar.gz',size=release['size'],digest='sha256:'+release['sha256'],browser_download_url=release['url'])])
         # Replace transport only. Keep actual SHA256 checks, extraction, setup,
         # version recording and application installation unchanged.
         with patch.object(update.urllib.request,'build_opener') as opener:
-            opener.return_value.open.side_effect=lambda *args,**kwargs:archive.open('rb')
-            code=update.apply(release,'pt-BR')
+            opener.return_value.open.side_effect=lambda request,**kwargs:io.BytesIO(json.dumps(metadata).encode()) if request.full_url==update.API else archive.open('rb')
+            checked=update.check_release()
+            assert checked['available']
+            code=update.apply(checked,'pt-BR')
         if code:raise SystemExit('Update did not finish: '+str(code))
-        assert update.installed_version()=='0.1.0'
+        assert update.installed_version()==version
         assert marker.read_text()=='Keep this personal file.\n'
         for name,content in before.items():
             after=settings(Path(name))
@@ -58,4 +63,7 @@ try:
                 print(''.join(difflib.unified_diff(content.decode().splitlines(True),after.decode().splitlines(True),fromfile=name+' before',tofile=name+' after')),flush=True)
                 raise AssertionError('Changed personal setting: '+name)
         print(json.dumps(dict(status='passed',transport='local fixture; not a published GitHub release',version=update.installed_version(),preserved_settings=list(before)),indent=2))
-finally:marker.unlink(missing_ok=True)
+finally:
+    marker.unlink(missing_ok=True)
+    # Test version numbers must not hide the first real published release.
+    if not update.pending_path().exists():update.record_install(ROOT)

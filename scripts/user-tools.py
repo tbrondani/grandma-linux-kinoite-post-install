@@ -128,34 +128,72 @@ def reading():
             'Configurações de leitura salvas. Reabra os aplicativos para ver as mudanças. Você pode restaurar as configurações anteriores aqui.')
 
 
+class UpdateProgress:
+    """Native busy dialog that stays open for the complete project update."""
+    def __enter__(self):
+        import dbus
+        reference=dialog('--progressbar',text('Preparing the update…','Preparando a atualização…'),'0',title=text('Grandma Linux update','Atualização Grandma Linux')).split()
+        if len(reference)!=2:raise RuntimeError('Cannot open update progress dialog.')
+        self.interface=dbus.Interface(dbus.SessionBus().get_object(*reference),'org.kde.kdialog.ProgressDialog')
+        return self
+    def __call__(self,stage,value=None):
+        labels={
+            'download':text('Downloading update','Baixando atualização')+(' — '+str(value)+'%' if value is not None else ''),
+            'verify':text('Verifying the update package…','Verificando o pacote da atualização…'),
+            'install':text('Installing the update. Keep the computer on.','Instalando a atualização. Mantenha o computador ligado.'),
+            'complete':text('Update complete.','Atualização concluída.'),
+        }
+        try:self.interface.setLabelText(labels.get(stage,stage))
+        except Exception:pass  # Closing the window must not interrupt a package operation.
+    def __exit__(self,*args):
+        try:self.interface.close()
+        except Exception:pass
+
+
 def updates():
-    from project_update import check_release, apply, UpdateError
-    choice=dialog('--menu',text('What do you want to update?','O que você quer atualizar?'),
+    from project_update import apply, UpdateError, available_update, installed_version, state_dir, discard_pending
+    version=installed_version()
+    choice=dialog('--menu',text('Installed Grandma Linux: ','Grandma Linux instalado: ')+version,
                   'system',text('System and applications','Sistema e aplicativos'),
-                  'project',text('Grandma Linux setup and manual','Configuração e manual Grandma Linux'))
+                  'project',text('Grandma Linux setup and manual','Configuração e manual Grandma Linux'),
+                  'log',text('View the last project update log','Ver o registro da última atualização do projeto'),
+                  'restart',text('Start the project update again','Recomeçar a atualização do projeto'))
     if choice=='system':
         subprocess.Popen(['plasma-discover','--mode','update']);return
-    dialog('--passivepopup',text('Checking for updates…','Buscando atualizações…'),'5')
+    if choice=='log':
+        path=state_dir()/'project-update.log'
+        if path.is_file():view(path,text('Update log','Registro da atualização'))
+        else:message('No project update has run yet.','Nenhuma atualização do projeto foi executada ainda.')
+        return
     try:
-        release=check_release()
+        if choice=='restart':
+            dialog('--yesno',text('Discard the saved update package? The next check will look for the latest release.',
+                                  'Descartar o pacote de atualização salvo? A próxima busca procurará a versão mais recente.'))
+            discard_pending()
+            message('Saved update cleared. Select the project update to check again.','Pacote salvo removido. Selecione a atualização do projeto para buscar novamente.')
+            return
+        with UpdateProgress() as progress:
+            release,pending=available_update()
         if release is None:
             message('No stable Grandma Linux release is available yet.','Ainda não há uma versão estável do Grandma Linux disponível.');return
         if not release['available']:
             message('Grandma Linux is up to date.','O Grandma Linux está atualizado.');return
-        dialog('--yesno',text('Install Grandma Linux ','Instalar Grandma Linux ')+release['tag']+'?\n'+text(
-            'Keep this window open. Your wallpaper and desktop settings are preserved.',
-            'Aguarde até concluir. Seu papel de parede e as configurações da área de trabalho serão preservados.'))
-        dialog('--passivepopup',text('Updating Grandma Linux. Please wait.','Atualizando Grandma Linux. Aguarde.'),'10')
-        code=apply(release,'pt-BR' if PT else 'en')
+        action=text('Resume Grandma Linux ','Retomar Grandma Linux ') if pending else text('Install Grandma Linux ','Instalar Grandma Linux ')
+        dialog('--yesno',action+release['tag']+'?\n'+text(
+            'Your wallpaper, reading preferences and backup settings are preserved.',
+            'Seu papel de parede, preferências de leitura e configurações de backup serão preservados.'))
+        with UpdateProgress() as progress:code=apply(release,'pt-BR' if PT else 'en',progress)
         if code==75:
-            message('Restart the computer, then open Updates and try again.','Reinicie o computador. Depois abra Atualizações e tente novamente.')
+            message('Restart the computer, then open Updates → Grandma Linux to finish. The verified package is saved.',
+                    'Reinicie o computador. Depois abra Atualizações → Grandma Linux para concluir. O pacote verificado está salvo.')
         else:message('Grandma Linux update complete.','Atualização do Grandma Linux concluída.')
     except UpdateError as error:
         messages={
             'network':('Cannot connect to GitHub. Check your internet connection.','Não foi possível acessar o GitHub. Verifique a conexão com a internet.'),
             'busy':('An update is already running.','Uma atualização já está em andamento.'),
         }
-        en,pt=messages.get(str(error),('The update could not be completed. Try again later. See ~/.local/state/grandma-linux/project-update.log.','Não foi possível concluir a atualização. Tente novamente mais tarde. Consulte ~/.local/state/grandma-linux/project-update.log.'))
+        en,pt=messages.get(str(error),('The update could not be completed. Open Updates → View the last project update log. You can retry the update.',
+            'Não foi possível concluir a atualização. Abra Atualizações → Ver o registro da última atualização do projeto. Você pode tentar novamente.'))
         dialog('--error',text(en,pt))
 
 
