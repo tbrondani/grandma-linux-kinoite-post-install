@@ -14,6 +14,18 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 import profiles
 
 class Profiles(unittest.TestCase):
+    def test_language_change_requires_separate_consent(self):
+        for current,requested in [('en','pt-BR'),('pt-BR','en')]:
+            for answer in ('n',''):
+                with patch('builtins.input',return_value=answer):
+                    self.assertEqual(profiles.confirm_language(requested,current,True),current)
+            with patch('builtins.input',return_value='yes'):
+                self.assertEqual(profiles.confirm_language(requested,current,True),requested)
+            with patch('builtins.input',side_effect=AssertionError('no terminal')):
+                self.assertEqual(profiles.confirm_language(requested,current,False),current)
+                self.assertEqual(profiles.confirm_language(current,current,True),current)
+                self.assertEqual(profiles.confirm_language(requested,None,True),requested)
+
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.home=Path(self.temp.name)
         self.env=patch.dict(os.environ,{'HOME':str(self.home),'XDG_CONFIG_HOME':str(self.home/'.config')});self.env.start()

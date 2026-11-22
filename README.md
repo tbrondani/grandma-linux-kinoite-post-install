@@ -43,7 +43,7 @@ curl -fsSL https://raw.githubusercontent.com/tbrondani/grandma-linux-kinoite-pos
 
 Remove `--dry-run` to install in a test VM. The installer downloads an archive and does not require Git. After a requested reboot, run the same command again. Do not use on your main machine yet.
 
-To use a published version, replace `main` in the URL with its tag and pass `GRANDMA_REF=vX.Y.Z` to Bash. No tested release exists yet.
+Without `GRANDMA_REF`, the installer selects the latest published stable release. It stops if no release is available. To pin a version, pass `GRANDMA_REF=vX.Y.Z` to Bash; a missing tag fails instead of selecting another version. Use `GRANDMA_REF=main` only for development. The URL above loads the bootstrap from main, while the installed code comes from the selected release.
 
 After setup, open **Help** or **User manual** on the desktop. See [local backup and recovery](docs/BACKUP.md).
 
@@ -54,3 +54,7 @@ Open **Updates** on the desktop or in **System**. Choose **Grandma Linux setup a
 ## Installation profiles
 
 Open **Installer** to reuse the current profile or choose a YAML file. Preview with `./setup.sh --config profile.yaml --dry-run`. Preferences, applied state and private history are separate; disabled features retain existing data. See [profiles](docs/PROFILES.md).
+
+Use the same bootstrap URL with `bash -s -- --check` to check for updates to an existing installation without applying them. Use `bash -s -- --mode=update` to check and apply a published project update. These commands use the saved profile. New installations default to English when no language is specified; updates retain the saved language.
+
+If a requested language differs from the installed language, setup asks before changing it. Declining keeps the installed language and continues. Without an interactive terminal, the installed language is kept; `--yes` alone does not approve a language change.

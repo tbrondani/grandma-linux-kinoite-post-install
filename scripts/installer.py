@@ -27,7 +27,7 @@ def template(destination,dry_run=False):
 
 
 def wizard(args):
-    language=args.lang or ('pt-BR' if os.environ.get('LANG','').startswith('pt_BR') else 'en')
+    language=args.lang or (profiles.previous() or {}).get('language','en')
     say=lambda en,pt:print(text(en,pt,language))
     say('\nGrandma Linux · Installer','\nGrandma Linux · Instalador')
     print('─' * 44)
@@ -97,7 +97,8 @@ def main():
         interactive=args.interactive or (sys.stdin.isatty() and not args.no_interactive and not args.yes and not args.update and not args.dry_run)
         if interactive and not wizard(args):return 0
         if args.mode=='update' and not args.update and not args.dry_run:
-            command=[sys.executable,str(ROOT/'scripts/project_update.py'),'--apply','--lang='+('en' if args.lang in {None,'en','en-US'} else 'pt-BR')]
+            command=[sys.executable,str(ROOT/'scripts/project_update.py'),'--apply']
+            if args.lang:command.append('--lang='+('en' if args.lang=='en-US' else args.lang))
             if args.yes:command.append('--yes')
             if args.config:command+=['--config',str(args.config.resolve())]
             return subprocess.run(command).returncode
@@ -108,6 +109,10 @@ def main():
             profile=profiles.validate(json.loads(path.read_text())['desired'],ROOT)
         else:profile=profiles.load(ROOT,args.config)
         if args.lang:profile['language']='en' if args.lang=='en-US' else args.lang
+        if not args.update and not args.dry_run:
+            current=(profiles.previous() or {}).get('language')
+            profile['language']=profiles.confirm_language(profile['language'],current,
+                (args.interactive or sys.stdin.isatty()) and not args.no_interactive)
         mode=args.mode or ('update' if args.update else 'reconfigure' if profiles.manifest_path().exists() else 'install')
         plan=profiles.plan(ROOT,profile)
         print(('\n' if interactive else '')+text('Installation plan','Plano de instalação',profile['language']),flush=True)
