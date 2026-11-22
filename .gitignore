@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+validation-report*.json
+test-results/
+.vm-state/
+*.iso
+
+# Generated personal preferences; the example stays in data/.
+/grandma-profile.yaml

@@ -1,0 +1,208 @@
+{
+  "title": "Grandma Linux — User manual",
+  "prompt": "Select a task. Close the page to return to this list.",
+  "back": "Select OK to return to the task list.",
+  "topics": [
+    {
+      "id": "start",
+      "title": "Open an application",
+      "before": "Use the menu to find all applications.",
+      "steps": [
+        "Select the menu button at the bottom left.",
+        "Select a category.",
+        "Select an application."
+      ],
+      "result": "The application opens.",
+      "tip": "To use a desktop icon, double-click it."
+    },
+    {
+      "id": "files",
+      "title": "Find your files",
+      "steps": [
+        "Open Files.",
+        "Select a folder in the left panel.",
+        "Double-click a file."
+      ],
+      "result": "The file opens in an application.",
+      "tip": "Downloads contains downloaded files. Pictures contains your photos. Documents contains your documents."
+    },
+    {
+      "id": "save",
+      "title": "Save a document",
+      "before": "Use Documents to write a document. Use Notepad for a short note.",
+      "steps": [
+        "Press Ctrl+S in the application.",
+        "Select a destination folder.",
+        "Enter a file name.",
+        "Select Save."
+      ],
+      "result": "The application saves the file.",
+      "tip": "Keep the file extension that the application supplies."
+    },
+    {
+      "id": "internet",
+      "title": "Use the internet and WhatsApp",
+      "before": "These applications need an internet connection.",
+      "steps": [
+        "Open Internet.",
+        "Select the address bar at the top.",
+        "Enter a website address.",
+        "Press Enter."
+      ],
+      "result": "The website opens.",
+      "tip": "To use WhatsApp, open its desktop icon. Follow the instructions to connect your phone."
+    },
+    {
+      "id": "photos",
+      "title": "View photos or a PDF",
+      "steps": [
+        "Open Files.",
+        "Select Pictures or the folder that contains your file.",
+        "Double-click the photo or PDF file."
+      ],
+      "result": "Photos opens photos. PDF opens PDF documents.",
+      "tip": "To watch a video or listen to music, double-click the file in Files."
+    },
+    {
+      "id": "send",
+      "title": "Receive files from a phone",
+      "before": "The phone also needs LocalSend. Connect both devices to the same Wi-Fi network.",
+      "steps": [
+        "Open Send Files on the computer.",
+        "Open LocalSend on the phone.",
+        "Select the files to send on the phone.",
+        "Select this computer as the destination.",
+        "Accept the files on the computer, if asked."
+      ],
+      "result": "The transfer screen shows when the transfer is complete.",
+      "tip": "Use the transfer screen to open the received files. You do not need a cable."
+    },
+    {
+      "id": "screenshot",
+      "title": "Take a screenshot",
+      "steps": [
+        "Open Screenshot from Utilities.",
+        "Select the screenshot tool in its window or tray menu.",
+        "Select the area to capture.",
+        "Select the copy or save button."
+      ],
+      "result": "Saved screenshots are in Pictures/Screenshots.",
+      "tip": "If asked, allow screen capture. The Print Screen key depends on the configured shortcut."
+    },
+    {
+      "id": "translate",
+      "title": "Translate a short text",
+      "before": "Installed languages work without internet.",
+      "steps": [
+        "Open Translator from Utilities.",
+        "Select the source language on the left.",
+        "Select the translation language on the right.",
+        "Enter or paste a short text in the left field.",
+        "Select Translate."
+      ],
+      "result": "The translation appears in the right field.",
+      "tip": "Read the translation before you use it. Some Portuguese translations can use words from Portugal."
+    },
+    {
+      "id": "dictionary",
+      "title": "Look up a word",
+      "before": "Dictionary translates words. Use Translator for a sentence.",
+      "steps": [
+        "Open Dictionary from Utilities.",
+        "Select a dictionary for the required languages.",
+        "Enter the word.",
+        "Read the results."
+      ],
+      "result": "The installed dictionary works without internet.",
+      "tip": "Select the correct direction. Portuguese to English differs from English to Portuguese."
+    },
+    {
+      "id": "maps",
+      "title": "Use maps without internet",
+      "before": "Portugal maps are installed. Other regions need a download first.",
+      "steps": [
+        "Open Maps from Utilities.",
+        "Find Portugal on the map.",
+        "Enlarge the map to see roads and places."
+      ],
+      "result": "Downloaded regions are available without internet.",
+      "tip": "Without location information, the map might not show your current position. Enter a place in the search field to find it."
+    },
+    {
+      "id": "backup",
+      "title": "Make a backup",
+      "before": "A backup is a saved copy of your personal files.",
+      "steps": [
+        "Open Backup from Utilities.",
+        "Check the date of the last successful backup.",
+        "Select Back up now.",
+        "Wait for the completion message."
+      ],
+      "result": "The new copy contains Desktop, Documents, Downloads and Pictures.",
+      "tip": "Monthly copies need the computer on with your session open. This local copy does not include the installed system."
+    },
+    {
+      "id": "recover",
+      "title": "Recover files",
+      "steps": [
+        "Open Recover Files from Utilities.",
+        "Select a backup version.",
+        "Select a destination folder.",
+        "Wait for the completion message."
+      ],
+      "result": "A new folder opens with the recovered files. Your current files stay unchanged.",
+      "tip": "To use a saved backup from another installation, select Open a saved backup folder."
+    },
+    {
+      "id": "keep-backup",
+      "title": "Keep a copy before reinstalling",
+      "before": "A backup on this disk is also lost if you erase the disk.",
+      "steps": [
+        "Open Backup from Utilities.",
+        "Select Open backup folder.",
+        "Copy the entire folder to another storage location.",
+        "Keep its recovery key with the saved copy."
+      ],
+      "result": "The saved folder contains the repository, recovery key and recovery instructions.",
+      "tip": "Keep this folder private. Ask for help before you reinstall the system."
+    },
+    {
+      "id": "updates",
+      "title": "Update the computer",
+      "before": "Updates need an internet connection.",
+      "steps": [
+        "Save your work.",
+        "Open Updates from System. Select System and applications.",
+        "Review the available updates.",
+        "Select Update All.",
+        "Restart the computer if asked."
+      ],
+      "result": "Discover shows the update progress.",
+      "tip": "For the project, select Grandma Linux setup and manual in Updates. Confirm the offered version. If asked, restart and select the same option to finish. Keep the power connected."
+    },
+    {
+      "id": "help",
+      "title": "Ask for help",
+      "steps": [
+        "Open Help on the desktop.",
+        "Select Support information to view the computer information.",
+        "Give this information to the person who helps you."
+      ],
+      "result": "The information stays on the computer until you share it.",
+      "tip": "To allow remote help, select Remote support in Help. Share the temporary password only with your helper. Close Remote Support when finished. For larger text, open System → Reading comfort. Choose 12 or 14 pt; restore the previous font there if needed. Open Installer to change selected components or reuse a saved YAML profile. Preview before applying."
+    },
+    {
+      "id": "shutdown",
+      "title": "Turn off the computer",
+      "steps": [
+        "Save your work.",
+        "Close your applications.",
+        "Open the menu at the bottom left.",
+        "Select Shut Down.",
+        "Confirm if asked."
+      ],
+      "result": "The computer turns off.",
+      "tip": "Use Restart when you want the computer to start again."
+    }
+  ]
+}

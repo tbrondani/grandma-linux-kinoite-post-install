@@ -1,0 +1,23 @@
+PRIMEIROS PASSOS
+
+Internet: abra Internet. Seus arquivos baixados ficam em Downloads.
+Fotos: abra Fotos. Para trazer fotos do celular, use Enviar Arquivos.
+Documentos: abra Documentos. Para ler um PDF, abra PDF.
+Capturas de tela: pressione Print Screen. As imagens ficam em Imagens/Screenshots.
+Tradutor: em Utilitários, escolha os idiomas e clique em Traduzir.
+Mapas e Dicionário: os dados instalados funcionam sem internet.
+
+CÓPIAS E RECUPERAÇÃO
+
+Backup copia mensalmente Área de trabalho, Documentos, Downloads e Imagens.
+O computador precisa estar ligado e sua sessão aberta.
+Em Utilitários → Backup, use Fazer cópia agora e consulte a última cópia.
+Em Recuperar arquivos, escolha uma versão e onde guardar os arquivos recuperados.
+A recuperação cria uma pasta nova. Seus arquivos atuais são preservados.
+
+ATUALIZAÇÕES E AJUDA
+
+Em Sistema → Atualizações, confira a lista e escolha Atualizar tudo.
+Se pedir para reiniciar, salve seu trabalho primeiro.
+Em Ajuda, escolha Como usar, Suporte remoto ou Informações para suporte.
+Abra Suporte remoto somente quando quiser ajuda e feche ao terminar.

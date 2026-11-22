@@ -1,0 +1,7 @@
+{
+  "url": "https://raw.githubusercontent.com/chromium/chromium/a79e8762808540b9e7e6b4f326808d5259e05adc/chrome/app/theme/chromium/product_logo_256.png",
+  "sha256": "e14120fdefb8eb455f44eac572f34bda75c32c9404e5c3745d44793dae217331",
+  "source": "https://chromium.googlesource.com/chromium/src/",
+  "license": "BSD-3-Clause",
+  "copyright": "The Chromium Authors"
+}

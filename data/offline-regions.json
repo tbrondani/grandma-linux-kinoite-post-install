@@ -1,0 +1,18 @@
+{
+  "application": "app.organicmaps.desktop",
+  "regions": [
+    {
+      "country": "Portugal",
+      "scope": "whole country"
+    },
+    {
+      "country": "Brazil",
+      "scope": "select required states before downloading"
+    }
+  ],
+  "download_method": "scripts/maps.py; installed catalogue, official HTTPS servers, size and SHA-1 verification",
+  "guide": "docs/OFFLINE.pt-BR.md",
+  "download_regions": [
+    "Portugal"
+  ]
+}

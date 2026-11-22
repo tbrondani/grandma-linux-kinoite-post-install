@@ -1,0 +1,28 @@
+# Flatpak ID|native command|English task name|Brazilian Portuguese task name
+com.brave.Browser|brave-browser|Internet|Internet
+org.mozilla.firefox|firefox|Firefox|Firefox
+org.kde.dolphin|dolphin|Files|Arquivos
+org.kde.gwenview|gwenview|Photos|Fotos
+org.videolan.VLC|vlc|Videos and Music|Vídeos e Música
+org.kde.okular|okular|PDF|PDF
+org.onlyoffice.desktopeditors|desktopeditors|Documents|Documentos
+org.kde.kwrite|kwrite|Notepad|Bloco de Notas
+org.localsend.localsend_app|localsend|Send Files|Enviar Arquivos
+io.missioncenter.MissionCenter|missioncenter|Task Manager|Gerenciador de Tarefas
+com.rustdesk.RustDesk|-|Remote Support|Suporte Remoto
+org.kde.kdeconnect|kdeconnect-app|Connect Phone|Conectar Celular
+com.ktechpit.omnidict|omnidict|Dictionary|Dicionário
+app.organicmaps.desktop|organicmaps|Maps|Mapas
+org.kde.kamoso|kamoso|Camera|Câmera
+org.kde.kcalc|kcalc|Calculator|Calculadora
+org.kde.ark|ark|ZIP Files|Arquivos ZIP
+org.flameshot.Flameshot|flameshot|Screenshot|Captura de Tela
+org.kde.kolourpaint|kolourpaint|Paint|Paint
+org.kde.filelight|filelight|Disk Space|Espaço em Disco
+org.kde.kpat|kpat|Solitaire|Paciência
+org.kde.kmines|kmines|Minesweeper|Campo Minado
+org.kde.ksudoku|ksudoku|Sudoku|Sudoku
+org.kde.kmahjongg|kmahjongg|Mahjong|Mahjong
+org.kde.palapeli|palapeli|Jigsaw Puzzle|Quebra-cabeça
+org.kde.kblocks|kblocks|Falling Blocks|Blocos
+org.kde.kapman|kapman|Maze Game|Labirinto

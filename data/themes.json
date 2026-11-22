@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1407086,
+    "name": "Se7en Aero",
+    "filename": "Se7enAero-Global.tar.gz",
+    "sha256": "16c11ff3720b863ced1e46d3bffbe87bcda8bd6eadcf022b636ec6c3b4d7e532",
+    "size": 2160881,
+    "homepage": "https://store.kde.org/p/1407086"
+  },
+  {
+    "id": 1406638,
+    "name": "Se7en Aero Aurorae Style",
+    "filename": "Se7enAero-aurorae.tar.gz",
+    "sha256": "3aa7a468b5cd521cbc6d7eb0370c49a90989f313a55711e228ba716ea1bf91cc",
+    "size": 51816,
+    "homepage": "https://store.kde.org/p/1406638"
+  },
+  {
+    "id": 2143603,
+    "name": "Win7OS color Theme - By yeyushengfan258",
+    "filename": "Win7OS.zip",
+    "sha256": "758b067edc6a8edb085e93b56aabee648c6d2a969dc53ad61dae09d88391612f",
+    "size": 783,
+    "homepage": "https://store.kde.org/p/2143603"
+  },
+  {
+    "id": 1407084,
+    "name": "Se7en Aero Plasma Style",
+    "filename": "Se7enAeroStyle.tar.gz",
+    "sha256": "1cb28d11af00e6bf2e33b7b94490250940ad5b3c7dc9061361efdcf7d8668e08",
+    "size": 1261420,
+    "homepage": "https://store.kde.org/p/1407084"
+  },
+  {
+    "id": 1354234,
+    "name": "7 Icons (Win2-7)",
+    "filename": "1.0.zip",
+    "sha256": "5340f4f40efa295bbc37ea53f83ff411c7986e9f478b32796b6b6bfa27a6f87a",
+    "size": 14021004,
+    "homepage": "https://store.kde.org/p/1354234"
+  }
+]

@@ -1,0 +1,29 @@
+# Grandma Linux profile — edit this file, then pass --config PATH.
+# Missing settings keep saved preferences, or defaults on a new account.
+schema_version: 1
+language: en
+features:
+  accessibility: true
+  theme: true
+  offline_maps: true
+  dictionaries: true
+  translator: true
+  games: true
+  remote_support: true
+  backup: true
+  ai: false
+# Optional per-app overrides, using IDs from data/apps.tsv.
+applications: {}
+# Non-secret user-session variables. Values must be quoted strings.
+environment: {}
+# Assertions only: the installer never creates/moves the desktop account.
+system:
+  username: null
+  home: null
+# Existing mount paths only, e.g. home: "/var/home" under mount_points.
+storage:
+  mount_points: {}
+# Used only when provisioning a NEW disposable test VM.
+vm:
+  username: tester
+  autologin: true

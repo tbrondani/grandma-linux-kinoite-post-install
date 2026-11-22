@@ -1,0 +1,23 @@
+FIRST STEPS
+
+Internet: open Internet. Downloaded files are in Downloads.
+Photos: open Photos. Use Send Files to receive photos from a phone.
+Documents: open Documents. Open PDF to read PDF files.
+Screenshots: press Print Screen. Images are saved in Pictures/Screenshots.
+Translator: in Utilities, select two languages and select Translate.
+Maps and Dictionary: installed data work without internet.
+
+BACKUP AND RECOVERY
+
+Backup copies Desktop, Documents, Downloads and Pictures each month.
+Keep the computer on and your desktop session open.
+In Utilities → Backup, select Back up now or check the last successful copy.
+In Recover Files, select a version and a destination for recovered files.
+Recovery creates a new folder. Your current files are preserved.
+
+UPDATES AND HELP
+
+In System → Updates, review the list and select Update All.
+If a restart is needed, save your work first.
+In Help, select How to use, Remote support or Support information.
+Open Remote Support when you need help. Close it when you finish.
