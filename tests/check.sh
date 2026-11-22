@@ -7,6 +7,7 @@ bash tests/bootstrap.sh
 python3 tests/test_desktop.py
 python3 tests/test_theme.py
 python3 tests/test_settings.py
+python3 tests/test_reading.py
 python3 tests/maps.py
 python3 tests/test_user_tools.py
 python3 tests/test_manual.py

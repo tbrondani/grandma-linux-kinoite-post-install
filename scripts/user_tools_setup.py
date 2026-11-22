@@ -17,6 +17,7 @@ TOOLS={
  'grandma-backup':('Backup','Backup','backup','document-save'),
  'grandma-recover':('Recover Files','Recuperar arquivos','recover','document-revert'),
  'grandma-support-info':('Support information','Informações para suporte','info','dialog-information'),
+ 'grandma-reading':('Reading comfort','Conforto de leitura','reading','preferences-desktop-font'),
  'grandma-updates':('Updates','Atualizações','updates','system-software-update'),
 }
 
@@ -32,7 +33,7 @@ def update_menu(config):
     if not path.is_file():return
     tree=ET.parse(path);root=tree.getroot()
     groups={'Help':['grandma-help','grandma-guide','grandma-support-info'],
-            'Utilities':['grandma-backup','grandma-recover'], 'System':['grandma-updates']}
+            'Utilities':['grandma-backup','grandma-recover'], 'System':['grandma-updates','grandma-reading']}
     for name,ids in groups.items():
         node=next((n for n in root.findall('Menu') if n.findtext('Name')==name),None)
         if node is None:continue
@@ -52,7 +53,7 @@ def install(root,dry_run=False,update=False):
     home=Path.home();config=Path(os.environ.get('XDG_CONFIG_HOME',home/'.config'))
     data=Path(os.environ.get('XDG_DATA_HOME',home/'.local/share'))
     base=home/'.local/libexec/grandma-linux';base.mkdir(parents=True,exist_ok=True)
-    for name in ['backup.py','user-tools.py','project_update.py']:
+    for name in ['backup.py','user-tools.py','project_update.py','reading.py']:
         shutil.copyfile(root/'scripts'/name,base/name)
     shutil.copyfile(root/'VERSION',base/'VERSION')
     # The support launcher is also installed by desktop.py. Copy it here so this

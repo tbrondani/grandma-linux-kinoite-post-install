@@ -189,7 +189,7 @@
         "Give this information to the person who helps you."
       ],
       "result": "The information stays on the computer until you share it.",
-      "tip": "To allow remote help, select Remote support in Help. Share the temporary password only with your helper. Close Remote Support when finished."
+      "tip": "To allow remote help, select Remote support in Help. Share the temporary password only with your helper. Close Remote Support when finished. For larger text, open System → Reading comfort. Choose 12 or 14 pt; restore the previous font there if needed."
     },
     {
       "id": "shutdown",

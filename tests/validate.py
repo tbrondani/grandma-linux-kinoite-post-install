@@ -87,6 +87,14 @@ for app_id in ('com.brave.Browser','io.missioncenter.MissionCenter'):
     parser.read(data/'applications'/f'{app_id}.desktop')
     icon=parser.get('Desktop Entry','Icon',fallback='')
     record(f'{app_id}: icon file', bool(icon) and Path(icon).is_absolute() and Path(icon).is_file())
+result=command('kreadconfig6','--file','kdeglobals','--group','Icons','--key','Theme')
+record('Windows 7 icons active',result is not None and result.stdout.strip()=='Windows-7-1.0')
+font_manifest=json.loads((root/'data/reading-fonts.json').read_text())
+import hashlib
+for item in font_manifest['files']:
+    path=data/'fonts/grandma-linux/AtkinsonHyperlegibleNext'/item['filename']
+    record('Reading font: '+item['filename'],path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==item['sha256'])
+record('Reading comfort launcher',(data/'applications/grandma-reading.desktop').is_file())
 record('WhatsApp shortcut', folder is not None and (folder/'grandma-whatsapp.desktop').is_file())
 mime=configparser.ConfigParser(interpolation=None,strict=False)
 mime.read(config/'mimeapps.list')

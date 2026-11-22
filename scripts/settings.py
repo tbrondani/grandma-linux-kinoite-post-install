@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 from desktop import entries, launcher_names
-from theme import install as install_theme, adjust_menu_opacity
+from theme import install as install_theme, adjust_menu_opacity, apply_win7_icons
 from remote_support import configure as configure_remote_support
 
 
@@ -42,7 +42,7 @@ def configure(root, dry_run=False):
     for app_id, native, en, pt in entries(root):
         installed[app_id] = next(name for name in launcher_names(app_id, native) if (apps / name).is_file())
     installed['grandma-translator'] = 'grandma-translator.desktop'
-    for app in ['grandma-help','grandma-guide','grandma-backup','grandma-recover','grandma-support-info','grandma-updates']:
+    for app in ['grandma-help','grandma-guide','grandma-backup','grandma-recover','grandma-support-info','grandma-updates','grandma-reading']:
         installed[app]=app+'.desktop'
     for key, value in [('SingleClick', 'false'), ('MiddleClickPaste', 'false')]:
         subprocess.run(['kwriteconfig6', '--file', 'kdeglobals', '--group', 'KDE', '--key', key, value], check=True)
@@ -86,7 +86,7 @@ def configure(root, dry_run=False):
     write_ini(data / 'desktop-directories/grandma-System.directory', {'Desktop Entry': {'Type':'Directory','Name':'System','Name[pt_BR]':'Sistema','Icon':'preferences-system'}})
     ET.SubElement(tools,'Directory').text='grandma-System.directory'
     include=ET.SubElement(tools,'Include')
-    for filename in ('systemsettings.desktop','org.kde.discover.desktop','org.kde.konsole.desktop','grandma-updates.desktop'):
+    for filename in ('systemsettings.desktop','org.kde.discover.desktop','org.kde.konsole.desktop','grandma-updates.desktop','grandma-reading.desktop'):
         ET.SubElement(include,'Filename').text=filename
     menu_path=config / 'menus/plasma-applications.menu'
     menu_path.parent.mkdir(parents=True, exist_ok=True)
@@ -105,12 +105,12 @@ def configure(root, dry_run=False):
     configure_remote_support()
     install_theme(root,data)
     adjust_menu_opacity(data)
+    apply_win7_icons(data)
     subprocess.run(['plasma-apply-colorscheme','Win7OS'],check=True)
     subprocess.run(['plasma-apply-desktoptheme','Se7enAeroStyle'],check=True)
     for file,group,key,value in [
         ('kdeglobals','KDE','LookAndFeelPackage','Se7enAero'),
         ('kdeglobals','KDE','widgetStyle','fusion'),
-        ('kdeglobals','Icons','Theme','Win11'),
         ('kwinrc','org.kde.kdecoration2','library','org.kde.kwin.aurorae'),
         ('kwinrc','org.kde.kdecoration2','theme','__aurorae__svg__Se7enAero'),
         ('kwinrc','org.kde.kdecoration2','ButtonsOnLeft','M'),

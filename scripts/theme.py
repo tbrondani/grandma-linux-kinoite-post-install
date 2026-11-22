@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import tarfile
 import tempfile
 import urllib.request
@@ -13,7 +14,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 DESTINATIONS = {1407086: 'plasma/look-and-feel/Se7enAero',1406638:'aurorae/themes',
-                2143603:'color-schemes',1407084:'plasma/desktoptheme/Se7enAeroStyle',1407137:'icons'}
+                2143603:'color-schemes',1407084:'plasma/desktoptheme/Se7enAeroStyle',1354234:'icons'}
 
 
 def digest(path):
@@ -49,6 +50,27 @@ def fetch(package, cache):
     return target
 
 
+def extract_zip(archive,staging):
+    """Preserve icon aliases, rejecting links and paths outside staging."""
+    with zipfile.ZipFile(archive) as source:
+        links=[]
+        for entry in source.infolist():
+            path=staging/entry.filename
+            if not path.resolve().is_relative_to(staging.resolve()):raise RuntimeError('Unsafe archive path.')
+            if stat.S_ISLNK(entry.external_attr >> 16):
+                target=source.read(entry).decode('utf-8')
+                if Path(target).is_absolute() or not (path.parent/target).resolve().is_relative_to(staging.resolve()):
+                    raise RuntimeError('Unsafe archive link.')
+                links.append((path,target))
+        # Extract regular data before creating aliases. Never write through a link.
+        for entry in source.infolist():
+            if not stat.S_ISLNK(entry.external_attr >> 16):source.extract(entry,staging)
+        for path,target in links:
+            path.parent.mkdir(parents=True,exist_ok=True);path.symlink_to(target)
+        for path,target in links:
+            if not path.resolve().is_relative_to(staging.resolve()):raise RuntimeError('Unsafe archive link chain.')
+
+
 def install(root, data):
     packages=json.loads((root/'data/themes.json').read_text())
     cache=Path(os.environ.get('XDG_CACHE_HOME',str(Path.home()/'.cache')))/'grandma-linux/themes'
@@ -56,24 +78,28 @@ def install(root, data):
     for package,archive in archives:
         destination=data/DESTINATIONS[package['id']]
         marker=destination/f'.grandma-{package["id"]}.sha256'
-        if marker.is_file() and marker.read_text().strip()==package['sha256']:
+        layout=destination/f'.grandma-{package["id"]}.layout'
+        zipped=zipfile.is_zipfile(archive)
+        if marker.is_file() and marker.read_text().strip()==package['sha256'] and (not zipped or layout.is_file() and layout.read_text().strip()=='2'):
             continue
         with tempfile.TemporaryDirectory() as folder:
             staging=Path(folder)
-            if zipfile.is_zipfile(archive):
-                with zipfile.ZipFile(archive) as source:
-                    for entry in source.infolist():
-                        path=(staging/entry.filename).resolve()
-                        if not path.is_relative_to(staging):
-                            raise RuntimeError('Unsafe archive path.')
-                    source.extractall(staging)
+            if zipped:
+                extract_zip(archive,staging)
             else:
                 with tarfile.open(archive) as source:
                     source.extractall(staging,filter='data')
             destination.mkdir(parents=True,exist_ok=True)
             # No upstream shell or layout script is executed by this installer.
+            # Repair aliases from the old ZIP extractor only when their contents
+            # exactly match the archived link. Do not replace a personal file.
+            for source in staging.rglob('*'):
+                if source.is_symlink():
+                    target=destination/source.relative_to(staging)
+                    if target.is_file() and not target.is_symlink() and target.read_bytes()==os.readlink(source).encode():target.unlink()
             shutil.copytree(staging,destination,symlinks=True,dirs_exist_ok=True)
         marker.write_text(package['sha256']+'\n')
+        if zipped:layout.write_text('2\n')
         print(f'Installed {package["name"]}',flush=True)
 
 
@@ -96,3 +122,17 @@ def adjust_menu_opacity(data):
     ET.register_namespace('', 'http://www.w3.org/2000/svg')
     ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
     tree.write(path,encoding='utf-8',xml_declaration=True)
+
+
+def apply_win7_icons(data):
+    """Use the pinned Windows 7 icons with the installed KDE fallback."""
+    import configparser
+    import subprocess
+    path=data/'icons/Windows-7-1.0/index.theme'
+    if not path.is_file():raise RuntimeError('Windows 7 icon theme is missing.')
+    parser=configparser.ConfigParser(interpolation=None,strict=False)
+    parser.optionxform=str;parser.read(path)
+    # Upstream inherits Gnome/Windows, absent on a standard Kinoite desktop.
+    parser['Icon Theme']['Inherits']='breeze,hicolor'
+    with path.open('w') as output:parser.write(output,space_around_delimiters=False)
+    subprocess.run(['kwriteconfig6','--notify','--file','kdeglobals','--group','Icons','--key','Theme','Windows-7-1.0'],check=True)

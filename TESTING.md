@@ -163,3 +163,7 @@ FRESH=1 TEST_UPDATE=1 bash scripts/vm/start-test.sh
 ```
 
 The update fixture sets the test VM version to 0.1.0. This is test data, not a published release. The original clean baseline is preserved.
+
+Reading presets: in the VM, compare System → Reading comfort at 12 and 14 pt, then restore. Verify unrelated settings and original font/pointer keys survive. `tests/test_reading.py` covers first-original preservation, repeated selection, missing fonts, checksum failures and refusal to overwrite a modified font file. Physical readability still needs the intended reader and display.
+
+The 7 Icons ZIP contains symbolic aliases. `tests/test_theme.py` checks that aliases resolve to their original icon files and that escaping links are rejected. The installer keeps missing-icon fallback on Breeze; it does not execute upstream scripts.

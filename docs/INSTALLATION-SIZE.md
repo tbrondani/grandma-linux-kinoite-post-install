@@ -34,3 +34,5 @@ python3 scripts/installation-size.py --before before.json --output after.json --
 ```
 
 Keep measurements outside Git unless reviewed for publication. A filesystem delta also includes unrelated changes; use the same clean VM and avoid other work during measurement. Exact setup traffic and total additional disk cost remain pending a clean baseline run.
+
+The 7 Icons replacement downloads 14,021,004 bytes (about 2.92 MB more than the previous Win11 archive). The four Atkinson font files plus OFL license download 273,183 bytes. Shared runtime costs are unchanged.

@@ -9,3 +9,5 @@ Informações para suporte mostra versão do sistema, processador, RAM, espaço 
 Veja também [Backup local](BACKUP.pt-BR.md).
 
 Abra **Sistema → Atualizações**. Escolha **Sistema e aplicativos** para abrir o Discover, ou **Configuração e manual Grandma Linux** para uma versão estável do projeto. Confirme a atualização. Se for necessário reiniciar, reinicie e selecione a atualização do projeto novamente. As configurações da área de trabalho e do backup serão preservadas.
+
+Para aumentar o texto, abra **Sistema → Conforto de leitura**. Escolha 12 ou 14 pontos, ou restaure as configurações anteriores. Reabra os aplicativos para ver as mudanças.

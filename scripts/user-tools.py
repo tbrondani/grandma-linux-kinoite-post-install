@@ -114,6 +114,20 @@ def guide():
         subprocess.run(['xdg-open',manual.as_uri()],check=True)
 
 
+def reading():
+    from reading import apply
+    choice=dialog('--menu',text('Choose the text size you find easiest to read.','Escolha o tamanho de texto mais confortável para você.'),
+        'standard',text('Atkinson — 12 pt','Atkinson — 12 pt'),
+        'large',text('Atkinson — 14 pt','Atkinson — 14 pt'),
+        'restore',text('Restore previous font and pointer size','Restaurar fonte e tamanho do ponteiro anteriores'),
+        'settings',text('More font settings','Mais opções de fonte'))
+    if choice=='settings':
+        subprocess.Popen(['systemsettings','kcm_fonts']);return
+    apply(choice)
+    message('Reading settings saved. Reopen applications to see the changes. You can restore the previous settings here.',
+            'Configurações de leitura salvas. Reabra os aplicativos para ver as mudanças. Você pode restaurar as configurações anteriores aqui.')
+
+
 def updates():
     from project_update import check_release, apply, UpdateError
     choice=dialog('--menu',text('What do you want to update?','O que você quer atualizar?'),
@@ -154,11 +168,11 @@ def help_menu(backup):
     elif choice=='remote':subprocess.Popen([sys.executable,str(BASE/'remote-support-session.py')])
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=['backup','recover','guide','help','info','scheduled-backup','updates']);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=['backup','recover','guide','help','info','scheduled-backup','updates','reading']);args=parser.parse_args()
     backup=Backup()
     try:
         if args.action=='scheduled-backup':backup.run()
-        else:{'backup':backup_menu,'recover':recover,'guide':lambda b:guide(),'help':help_menu,'info':support_information,'updates':lambda b:updates()}[args.action](backup)
+        else:{'backup':backup_menu,'recover':recover,'guide':lambda b:guide(),'help':help_menu,'info':support_information,'updates':lambda b:updates(),'reading':lambda b:reading()}[args.action](backup)
     except Cancelled:pass
     except Exception as error:
         if args.action=='scheduled-backup':

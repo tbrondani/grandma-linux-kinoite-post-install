@@ -34,7 +34,7 @@ The installer downloads these packages from KDE Store; this repository does not 
 | Se7en Aero Aurorae 0.3 | Infinality / upstream package | https://store.kde.org/p/1406638 | GPL_V2 in package metadata |
 | Se7en Aero Plasma Style 0.9.4.8 | Upstream theme contributors | https://store.kde.org/p/1407084 | Complete asset license review pending before redistribution |
 | Win7OS colors | Yeyushengfan258 | https://store.kde.org/p/2143603 | Complete asset license review pending before redistribution |
-| Win11 icons | Yeyushengfan258 and AUTHORS in the package | https://store.kde.org/p/1407137 | See COPYING and AUTHORS in the downloaded package |
+| 7 Icons (Win2-7) 1.0 | Elbullazul / B00merang-Artwork; original Win2-7 contributors | https://store.kde.org/p/1354234 | Upstream package has no complete license statement; full asset review remains required before redistribution |
 
 Windows wallpaper dependencies are omitted so personal wallpaper is preserved. AeroThemePlasma/AeroShell is not installed. The chat icon in `assets/chat.svg` is original project artwork under MIT.
 
@@ -59,3 +59,9 @@ Argos Translate 1.11.0 and Argos Translate GUI 1.6.5 are MIT-licensed upstream p
 The isolated environment uses uv 0.13.8 (MIT/Apache-2.0), CPython 3.12.16 and pinned Python dependencies; their licenses remain installed with each distribution. CPU-only PyTorch is used. `data/translation-models.json` pins Argos OPUS model downloads, retaining upstream README and attribution inside each installed package. Model/data licenses are separate from this repository's MIT license. MiniSBD (AGPL-3.0, https://github.com/LibreTranslate/MiniSBD) and six pinned sentence models provide offline sentence splitting. No upstream packages or model binaries are bundled in this repository. Complete dependency and model license review remains a release requirement.
 
 Organic Maps 2026.11 uses `countries.json` and a nine-byte BLAKE3 digest. The downloader also accepts the older `countries.txt`/SHA-1 catalogue. The native `b3sum` package verifies modern maps using the upstream catalogue format (https://github.com/organicmaps/organicmaps/blob/master/tools/python/post_generation/hierarchy_to_countries.py). No upstream hashing implementation is vendored.
+
+The pinned 7 Icons package replaces the Win11 download for new setup runs. Its `Windows-7-1.0/index.theme` inherits `breeze,hicolor` locally, because the original Gnome/Windows fallback themes are absent on Kinoite. Existing icon themes are retained. These assets are downloaded directly, not redistributed in this MIT repository.
+
+## Reading font
+
+Atkinson Hyperlegible Next is by the Atkinson Hyperlegible Next Project Authors / Braille Institute, under SIL Open Font License 1.1. `data/reading-fonts.json` pins four unchanged TTF files and OFL.txt from [upstream revision 7925f50](https://github.com/googlefonts/atkinson-hyperlegible-next/tree/7925f50f649b3813257faf2f4c0b381011f434f1). The font and license are installed together in the user's font directory. Font binaries are not bundled in this repository.
