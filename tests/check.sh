@@ -4,10 +4,13 @@ set -Eeuo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 bash -n setup.sh install.sh scripts/*.sh tests/*.sh
 bash tests/bootstrap.sh
+python3 tests/test_downloads.py
 python3 tests/test_desktop.py
 python3 tests/test_theme.py
 python3 tests/test_settings.py
 python3 tests/test_reading.py
+python3 tests/test_profiles.py
+python3 tests/test_installer.py
 python3 tests/maps.py
 python3 tests/test_user_tools.py
 python3 tests/test_manual.py
@@ -15,6 +18,7 @@ python3 tests/test_project_update.py
 python3 tests/test_release.py
 python3 tests/test_vm_login.py
 python3 tests/test_vm_runner.py
+python3 tests/test_vm_host.py
 python3 tests/test_backup.py
 ./setup.sh --dry-run --lang=en >/dev/null
 ./setup.sh --dry-run --lang=pt-BR >/dev/null

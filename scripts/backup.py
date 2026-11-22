@@ -51,6 +51,9 @@ class Backup:
             if not path.is_relative_to(self.home):raise ValueError('Backup folders must be inside the user home.')
             if path.is_dir() and path not in paths:paths.append(path)
         if not paths:raise ValueError('No personal folders are available.')
+        # Include the small portable profile, not the application/runtime data.
+        profile=self.config_dir/'profile.yaml'
+        if profile.is_file() and not profile.is_symlink() and profile.resolve().is_relative_to(self.home):paths.append(profile.resolve())
         return paths
 
     def config(self):

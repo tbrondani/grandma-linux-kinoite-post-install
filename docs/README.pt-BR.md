@@ -4,7 +4,7 @@
 
 Projeto de configuração pós-instalação para Fedora Kinoite e KDE Plasma. O objetivo é facilitar as tarefas do dia a dia, com uma área de trabalho familiar e nomes claros para os aplicativos.
 
-**Estado:** início do desenvolvimento. O script inicial foi testado em uma VM Fedora Kinoite 45. Os testes em hardware real e de aceitação da release ainda estão pendentes. Veja as [pendências](STATUS.md).
+**Estado:** início do desenvolvimento. O script inicial foi testado em uma VM Fedora Kinoite 45. Os testes em hardware real e de aceitação da release ainda estão pendentes.
 
 ## Prévia
 
@@ -50,3 +50,7 @@ Após a configuração, abra **Ajuda** ou **Manual de uso** na área de trabalho
 ## Atualizações
 
 Abra **Atualizações** na área de trabalho ou em **Sistema**. Escolha **Configuração e manual Grandma Linux** para atualizar o projeto, ou **Sistema e aplicativos** para abrir o Discover. Veja [como atualizar](UPDATES.pt-BR.md).
+
+## Perfis de instalação
+
+Abra **Instalador** para reutilizar as preferências ou escolher um YAML. Use `./setup.sh --config perfil.yaml --dry-run` para conferir sem alterar nada. Veja [perfis e reinstalação](PROFILES.pt-BR.md).

@@ -20,7 +20,7 @@ def configure(user, root=Path('/')):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--user',default='maria');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--user',default='tester');args=parser.parse_args()
     if os.geteuid()!=0:parser.error('Run with sudo inside the test VM')
     subprocess.run(['systemd-detect-virt','--vm'],check=True,stdout=subprocess.DEVNULL)
     subprocess.run(['id','--',args.user],check=True,stdout=subprocess.DEVNULL)

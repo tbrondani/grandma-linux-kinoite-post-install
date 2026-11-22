@@ -10,10 +10,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import urllib.request
+from downloads import open_url
 
 
 def entries(root):
-    for row in (root / 'data/apps.tsv').read_text().splitlines():
+    for row in Path(os.environ.get('GRANDMA_APPS_MANIFEST',root / 'data/apps.tsv')).read_text().splitlines():
         if row and not row.startswith('#'):
             yield row.split('|')
 
@@ -51,7 +52,7 @@ def browser_icon(root, data):
     metadata = json.loads((root / 'data/internet-icon.json').read_text())
     target = data / 'icons/hicolor/256x256/apps/grandma-internet.png'
     if not target.is_file() or hashlib.sha256(target.read_bytes()).hexdigest() != metadata['sha256']:
-        with urllib.request.urlopen(metadata['url'], timeout=30) as response:
+        with open_url(metadata['url'], timeout=30) as response:
             payload = response.read(1024 * 1024)
         if hashlib.sha256(payload).hexdigest() != metadata['sha256']:
             raise RuntimeError('Chromium icon checksum mismatch.')

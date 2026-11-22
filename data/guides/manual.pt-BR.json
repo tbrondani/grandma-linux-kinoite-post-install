@@ -189,7 +189,7 @@
         "Passe essas informações para a pessoa que vai ajudar."
       ],
       "result": "As informações ficam no computador até você compartilhá-las.",
-      "tip": "Para permitir ajuda à distância, selecione Suporte remoto em Ajuda. Compartilhe a senha temporária somente com quem vai ajudar. Feche Suporte Remoto ao terminar. Para aumentar o texto, abra Sistema → Conforto de leitura. Escolha 12 ou 14 pontos; restaure a fonte anterior ali se preferir."
+      "tip": "Para permitir ajuda à distância, selecione Suporte remoto em Ajuda. Compartilhe a senha temporária somente com quem vai ajudar. Feche Suporte Remoto ao terminar. Para aumentar o texto, abra Sistema → Conforto de leitura. Escolha 12 ou 14 pontos; restaure a fonte anterior ali se preferir. Abra Instalador para mudar os componentes ou reutilizar um perfil YAML. Confira o plano antes de aplicar."
     },
     {
       "id": "shutdown",

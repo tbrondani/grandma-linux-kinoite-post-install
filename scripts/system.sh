@@ -23,7 +23,7 @@ check_system() {
     deployment_status=$(rpm-ostree status --json) || fail 'Cannot read deployment status.' 'Não foi possível consultar as implantações.'
     if python3 -c 'import json,sys; d=json.load(sys.stdin)["deployments"]; sys.exit(0 if d and not d[0].get("booted",False) else 1)' <<< "$deployment_status"; then
         say 'A deployment is pending. Reboot and run setup again.' 'Há uma implantação pendente. Reinicie e execute novamente.'
-        if (( ${UPGRADE:-0} )); then exit 75; fi
+        if (( ${UPGRADE:-0} || ${GRANDMA_PROFILE_RUN:-0} )); then exit 75; fi
         exit 0
     fi
 }
@@ -31,8 +31,15 @@ install_system() {
     local package
     local -a missing=()
     for package in vim-enhanced restic fastfetch b3sum kdialog python3-dbus python3-gobject-base; do
+        if [[ $package == restic && ${GRANDMA_BACKUP:-1} == 0 ]]; then continue; fi
         if (( DRY_RUN )) || ! rpm -q "$package" >/dev/null 2>&1; then missing+=("$package"); fi
     done
+    # Locale data may be absent when selecting the other supported language.
+    local locale_name=en_US locale_package=glibc-langpack-en
+    if [[ ${GRANDMA_MESSAGE_LANG:-${LANGUAGE:-en}} == pt-BR ]]; then locale_name=pt_BR; locale_package=glibc-langpack-pt; fi
+    if (( DRY_RUN )) || ! LC_ALL=C locale -a | python3 -c 'import sys; normalize=lambda s:s.strip().lower().replace("-","").replace(".","");sys.exit(0 if normalize(sys.argv[1]+".utf8") in {normalize(line) for line in sys.stdin} else 1)' "$locale_name"; then
+        missing+=("$locale_package")
+    fi
     if (( ${#missing[@]} )); then
         if [[ ${GRANDMA_TEST_VM:-0} == 1 ]]; then
             run sudo -n rpm-ostree install "${missing[@]}"
@@ -41,7 +48,7 @@ install_system() {
         fi
         if (( ! DRY_RUN )); then
             say 'Reboot, then run the same setup command again.' 'Reinicie e execute o mesmo comando de configuração.'
-            if (( ${UPGRADE:-0} )); then exit 75; fi
+            if (( ${UPGRADE:-0} || ${GRANDMA_PROFILE_RUN:-0} )); then exit 75; fi
             exit 0
         fi
     fi

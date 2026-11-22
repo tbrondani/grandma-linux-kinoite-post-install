@@ -28,7 +28,7 @@ PYTHON
 # Atomic desktops store mutable /etc inside the deployment, not a conventional root.
 shadow_paths=$(sudo guestfish --ro -a "$disk" run : mount-ro /dev/sda3 / : glob-expand '/ostree/deploy/fedora/deploy/*/etc/shadow')
 [[ -n $shadow_paths ]] || { echo 'No Kinoite deployment found. Disk was not modified.' >&2; exit 1; }
-printf 'Nova senha para maria: '
+printf 'Nova senha para tester: '
 IFS= read -r -s password
 printf '\n'
 [[ -n $password ]] || { echo 'Empty password refused.' >&2; exit 2; }
@@ -48,13 +48,13 @@ p=Path(sys.argv[1]); hashed=Path(sys.argv[2]).read_text().strip()
 rows=p.read_text().splitlines(); found=False
 for i,row in enumerate(rows):
     fields=row.split(':')
-    if fields[0]=='maria':
+    if fields[0]=='tester':
         fields[1]=hashed
         rows[i]=':'.join(fields); found=True
-if not found: sys.exit('User maria not found; refusing to modify shadow.')
+if not found: sys.exit('User tester not found; refusing to modify shadow.')
 p.write_text('\n'.join(rows)+'\n')
 PYTHON
     sudo guestfish --rw -a "$disk" run : mount /dev/sda3 / : upload "$work/shadow" "$shadow"
 done <<< "$shadow_paths"
-echo 'Senha de maria redefinida. Iniciando a VM...'
+echo 'Senha de tester redefinida. Iniciando a VM...'
 sudo virsh --connect qemu:///system start "$VM_NAME"

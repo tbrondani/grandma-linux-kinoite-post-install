@@ -37,5 +37,5 @@ def prepare(image,user):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('image',type=Path);parser.add_argument('--user',default='maria');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('image',type=Path);parser.add_argument('--user',default='tester');args=parser.parse_args()
     prepare(args.image,args.user)

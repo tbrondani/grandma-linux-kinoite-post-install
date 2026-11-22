@@ -11,7 +11,7 @@ install_apps() {
             if flatpak info --user "$id" >/dev/null 2>&1 || flatpak info --system "$id" >/dev/null 2>&1; then continue; fi
         fi
         missing+=("$id")
-    done < "$ROOT/data/apps.tsv"
+    done < "${GRANDMA_APPS_MANIFEST:-$ROOT/data/apps.tsv}"
     (( ${#missing[@]} )) || return 0
     run flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     if (( ! DRY_RUN )); then

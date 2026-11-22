@@ -1,6 +1,6 @@
 # Prepare a release
 
-All changes to main require a reviewed pull request. Complete the applicable checks in [Testing](../TESTING.md) and record known limits in [Status](STATUS.md).
+All changes to main require a reviewed pull request. Complete the applicable checks in [Testing](../TESTING.md) and record known limits in the release notes.
 
 1. Merge the tested changes through the pull request.
 2. In GitHub Actions, run **Prepare release draft** on main with a new version such as `v0.1.0`.

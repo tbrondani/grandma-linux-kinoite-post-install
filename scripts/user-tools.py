@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 from backup import Backup, private_json
+from profiles import feature
 
 PT=os.environ.get('LANG','').startswith('pt_BR') or os.environ.get('LANGUAGE','').startswith('pt_BR')
 BASE=Path(__file__).resolve().parent
@@ -186,7 +187,12 @@ def updates():
         if code==75:
             message('Restart the computer, then open Updates → Grandma Linux to finish. The verified package is saved.',
                     'Reinicie o computador. Depois abra Atualizações → Grandma Linux para concluir. O pacote verificado está salvo.')
-        else:message('Grandma Linux update complete.','Atualização do Grandma Linux concluída.')
+        else:
+            try:
+                changes=json.loads((state_dir()/'installation.json').read_text()).get('profile_changes',[])
+            except (OSError,ValueError):changes=[]
+            suffix=text(' Saved profile changes were applied; details are in the update log.',' As alterações do perfil salvo foram aplicadas; os detalhes estão no registro.') if changes else ''
+            message('Grandma Linux update complete.'+suffix,'Atualização do Grandma Linux concluída.'+suffix)
     except UpdateError as error:
         messages={
             'network':('Cannot connect to GitHub. Check your internet connection.','Não foi possível acessar o GitHub. Verifique a conexão com a internet.'),
@@ -198,9 +204,9 @@ def updates():
 
 
 def help_menu(backup):
-    choice=dialog('--menu',text('How can we help?','Como podemos ajudar?'),
-        'guide',text('How to use','Como usar'),'remote',text('Remote support','Suporte remoto'),
-        'info',text('Support information','Informações para suporte'))
+    options=['guide',text('How to use','Como usar'),'info',text('Support information','Informações para suporte')]
+    if feature('remote_support'):options+=['remote',text('Remote support','Suporte remoto')]
+    choice=dialog('--menu',text('How can we help?','Como podemos ajudar?'),*options)
     if choice=='guide':guide()
     elif choice=='info':support_information(backup)
     elif choice=='remote':subprocess.Popen([sys.executable,str(BASE/'remote-support-session.py')])

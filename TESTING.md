@@ -34,7 +34,7 @@ python3 tests/validate.py > validation-report.json
 
 Exit status 1 means at least one required check failed. The report checks installed apps, localized launchers, and desktop shortcuts. It does not prove that app windows work or that remote access is secure. Review those manually.
 
-The supplied host start script currently cannot run inside the coding environment: sudo is blocked by the no-new-privileges setting. A host-side start or an accessible libvirt connection is needed for real VM tests.
+Run the host start script in the maintainer’s terminal so its single sudo authentication can complete. The coding environment can use guest SSH after the VM is ready; it cannot enter the host password.
 
 ## Start, install, and validate
 
@@ -44,17 +44,17 @@ On the host, with the test VM already installed:
 bash scripts/vm/start-test.sh
 ```
 
-The default guest user is `maria` (lowercase). This account must already exist; the runner does not create it. SSH accepts a key or asks for the guest password. Enable sshd in the VM and log into its KDE Wayland desktop first. To enable SSH once, run `sudo systemctl enable --now sshd` inside the VM. If the firewall blocks SSH, allow the SSH service in the active guest firewall zone. Override `VM_USER` if the installed account has another name. If address discovery fails, set `VM_HOST` to the guest IP. No Git is needed in the guest.
+The default guest user is `tester` (lowercase). For an existing VM, this account must already exist. New VM provisioning creates the configured test account. SSH accepts a key or asks for the guest password. Enable sshd in the VM and log into its KDE Wayland desktop first. To enable SSH once, run `sudo systemctl enable --now sshd` inside the VM. If the firewall blocks SSH, allow the SSH service in the active guest firewall zone. Override `VM_USER` if the installed account has another name. If address discovery fails, set `VM_HOST` to the guest IP. No Git is needed in the guest.
 
 The runner starts the existing VM, sends the local working tree, runs setup, reboots for pending deployments, and collects `test-results/validation-report.json`. After reboot, log into KDE again if auto-login is not configured, then rerun the command if it stopped. Authorization prompts for rpm-ostree may appear in the guest desktop. The runner never deletes the VM or its disk.
 
-Guest installation, reboot/resume, and validation have been exercised on the development VM; a complete fresh ISO provisioning qualification remains pending. It installs only the implemented features listed in docs/STATUS.md. RustDesk and other pending integrations will not become available just by running it.
+Guest installation, reboot/resume, and validation have been exercised on the development VM; a complete fresh ISO provisioning qualification remains pending. Use the validation report to review the installed features.
 
 ## Create the test VM automatically
 
-`bash start-knoite.sh` from the workspace now creates the VM if absent. It needs `virt-install`, libvirt/KVM, SSH tools, OpenSSL, and a Fedora Kinoite installer ISO on the host. The local default ISO is `/home/hackerman/Downloads/codebase/Fedora-Kinoite-Installer-45-1.4.x86_64.iso`. Override `ISO_PATH` on other hosts. `FEDORA_VERSION` defaults to `45` and selects the matching OSTree branch. The host default libvirt network must be active.
+`bash start-knoite.sh` from the workspace now creates the VM if absent. It needs `virt-install`, libvirt/KVM, SSH tools, OpenSSL, and a Fedora Kinoite installer ISO on the host. Set `ISO_PATH` to the local Fedora Kinoite installer ISO. `FEDORA_VERSION` defaults to `45` and selects the matching OSTree branch. The host default libvirt network must be active.
 
-The new disposable VM has 8 GB RAM, 4 vCPUs, and a 40 GB disk. Kickstart installs Fedora Kinoite 45 from the OSTree repository embedded in the installer ISO, creates `maria`, enables SSH with a generated test key, selects PT-BR, and enables desktop auto-login. No reusable user password is set. Host sudo may prompt during VM creation. Installation requires internet access and can take up to 30 minutes before SSH is ready.
+The new disposable VM has 8 GB RAM, 4 vCPUs, and a 40 GB disk. Kickstart installs Fedora Kinoite 45 from the OSTree repository embedded in the installer ISO, creates `tester`, enables SSH with a generated test key, selects PT-BR, and enables desktop auto-login. No reusable user password is set. Host sudo may prompt during VM creation. Installation requires internet access and can take up to 30 minutes before SSH is ready.
 
 The private key and generated Kickstart stay in ignored `.vm-state/`. Test-only sudo rules permit package layering and reboot; these settings are not part of the end-user installer. Existing VMs are never erased or retroactively provisioned.
 
@@ -124,10 +124,10 @@ The GUI test uses an offscreen Qt platform and does not inject desktop input. Re
 
 `python3 tests/test_backup.py` needs restic. It creates temporary repositories and checks actual data recovery, repeat setup, retention isolation, missing storage, init failure, concurrent operations and a simulated reinstall. It does not modify the user's backup. Host checks skip these tests if restic is absent; run them in the VM.
 
-For a clean test VM that does not log into Maria automatically, run inside the guest before setup:
+For a clean test VM that does not log into the test user automatically, run inside the guest before setup:
 
 ```sh
-sudo python3 scripts/vm/configure-login.py --user maria
+sudo python3 scripts/vm/configure-login.py --user tester
 ```
 
 The helper configures Plasma Login Manager and SDDM, and enables system SSH. Reboot and verify the Wayland session before saving a clean baseline. Do not update a baseline from a VM after the project installer has run.
@@ -175,3 +175,25 @@ The project update tests include malformed release metadata, incorrect checksums
 For the real reboot boundary in the disposable VM, run `GRANDMA_TEST_VM=1 python3 tests/update-reboot-guest.py prepare`, reboot, then run the same command with `resume`. This fixture stops its setup shim once with exit 75; after the real reboot it invokes the installed `grandma-update --apply --yes` command and the real setup. It checks reuse of the saved package, completion and cleanup. It does not change native packages to induce the reboot and does not use a published release.
 
 The release workflow creates a draft on main only; it has not been executed from the development branch. Review [release preparation](docs/RELEASING.md) before publication. Public GitHub asset download acceptance remains pending the first published release.
+
+## Profile acceptance
+
+`bash tests/check.sh` now checks strict YAML/schema handling, partial-profile merging, future-feature defaults, selected backend guards, environment escaping using systemd's generator, history on failure/reboot, profile restoration, reinstall with retained preferences and the installed offline installer source. New-VM Kickstart rendering checks configurable username/locale/auto-login without creating a domain.
+
+For real default/selected/update/restore acceptance on the existing disposable VM:
+
+```sh
+FRESH=0 TEST_PROFILES=1 bash scripts/vm/start-test.sh
+```
+
+The profile test retains the existing data, disables optional management and the owned backup timer, repeats without the original input file, rejects an unsupported AI profile, runs a local-release update fixture, and restores the original preferences/timer. It does not uninstall apps or repartition. `TEST_PROFILE=/absolute/profile.yaml` selects guest installation preferences; `VM_CONFIG=/absolute/profile.yaml` controls only NEW VM provisioning. Existing baseline auto-login preparation is unchanged.
+
+If the host libvirt service requires authentication, start the host runner in the maintainer's terminal. The runner starts only networks referenced by the named test VM; it does not define or remove networks. Do not claim that local mocked checks replace real guest installation.
+
+## Host authorization
+
+The runner now calls sudo once for `scripts/vm/prepare-host.py`. That process prepares/restores the named VM, starts only its referenced networks, starts the domain and discovers its address. Child provisioning/baseline helpers run in that already authorized root context. The runner then transfers files and runs guest tests as the ordinary user. It does not renew sudo credentials in the background or change sudoers/Polkit settings.
+
+Automatic viewer launch is off by default to avoid an independent graphical Polkit prompt. Keep the existing virt-manager window open. Set `OPEN_VM_DISPLAY=1` to request a viewer; a virt-manager connection may need its own authorization when no direct SPICE URL is available. Do not prefix the host runner with sudo.
+
+`tests/test_vm_runner.py` checks one sudo invocation and no automatic second GUI. `tests/test_vm_host.py` checks preparation sequencing and safe report ownership without changing real VMs. A real host authentication must still be verified from the maintainer's terminal.

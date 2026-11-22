@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import subprocess
 import urllib.request
+from downloads import open_url
 
 FAMILY='Atkinson Hyperlegible Next'
 FONT_KEYS=[('kdeglobals','General',key) for key in ['font','menuFont','toolBarFont','taskbarFont','smallestReadableFont']]+[('kdeglobals','WM','activeFont')]
@@ -29,7 +30,7 @@ def install(root,dry_run=False):
             if hashlib.sha256(path.read_bytes()).hexdigest()==item['sha256']:continue
             raise RuntimeError('Refusing to replace a modified font file: '+str(path))
         request=urllib.request.Request(item['url'],headers={'User-Agent':'GrandmaLinux'})
-        with urllib.request.urlopen(request,timeout=30) as response:
+        with open_url(request,timeout=30) as response:
             if not response.url.startswith('https://'):raise RuntimeError('Font download requires HTTPS.')
             payload=response.read(item['size']+1)
         if len(payload)!=item['size'] or hashlib.sha256(payload).hexdigest()!=item['sha256']:

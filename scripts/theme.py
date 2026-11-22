@@ -10,6 +10,7 @@ import stat
 import tarfile
 import tempfile
 import urllib.request
+from downloads import open_url
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -26,7 +27,7 @@ def fetch(package, cache):
     if target.is_file() and digest(target)==package['sha256']:
         return target
     api=f'https://api.kde-look.org/ocs/v1/content/data/{package["id"]}'
-    with urllib.request.urlopen(api,timeout=30) as response:
+    with open_url(api,timeout=30) as response:
         content=ET.fromstring(response.read()).find('.//content')
     if content is None:
         raise RuntimeError(f'KDE Store did not return package {package["id"]}')
@@ -37,7 +38,7 @@ def fetch(package, cache):
             break
     if not url or not url.startswith('https://'):
         raise RuntimeError(f'Pinned download unavailable: {package["name"]}')
-    with urllib.request.urlopen(url,timeout=90) as response:
+    with open_url(url,timeout=90) as response:
         if not response.url.startswith('https://'):
             raise RuntimeError('Non-HTTPS theme download refused.')
         payload=response.read(40*1024*1024+1)

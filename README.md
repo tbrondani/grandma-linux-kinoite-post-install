@@ -4,7 +4,7 @@
 
 A post-install setup project for Fedora Kinoite and KDE Plasma. It aims to make everyday tasks easy to find, with familiar desktop layouts and clear application names.
 
-**Status:** early development. The initial setup has been tested in a Fedora Kinoite 45 VM. Physical hardware and release acceptance tests are still pending. See [development status](docs/STATUS.md).
+**Status:** early development. The initial setup has been tested in a Fedora Kinoite 45 VM. Physical hardware and release acceptance tests are still pending.
 
 ## Preview
 
@@ -12,7 +12,7 @@ A post-install setup project for Fedora Kinoite and KDE Plasma. It aims to make 
 ./setup.sh --dry-run --lang=en
 ```
 
-The preview makes no changes. For development testing on a disposable Kinoite VM, run `./setup.sh --lang=en` as your desktop user. Reboot and run it again if requested. It installs apps and games and may request system authorization. It configures the curated desktop described in [development status](docs/STATUS.md).
+The preview makes no changes. For development testing on a disposable Kinoite VM, run `./setup.sh --lang=en` as your desktop user. Reboot and run it again if requested. It installs apps and games and may request system authorization.
 
 ## Target platform
 
@@ -50,3 +50,7 @@ After setup, open **Help** or **User manual** on the desktop. See [local backup 
 ## Updates
 
 Open **Updates** on the desktop or in **System**. Choose **Grandma Linux setup and manual** for a stable project release, or **System and applications** for Discover. See [Updates](docs/UPDATES.md) and [release preparation](docs/RELEASING.md).
+
+## Installation profiles
+
+Open **Installer** to reuse the current profile or choose a YAML file. Preview with `./setup.sh --config profile.yaml --dry-run`. Preferences, applied state and private history are separate; disabled features retain existing data. See [profiles](docs/PROFILES.md).

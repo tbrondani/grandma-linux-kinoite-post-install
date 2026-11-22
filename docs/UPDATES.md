@@ -23,3 +23,5 @@ The second command asks for confirmation. After a requested restart, run it agai
 Only stable releases from the project repository are offered. The archive must match GitHub's asset SHA256 digest. Until a stable release is published with the update asset, the tool reports that no version is available. It does not install unpublished branches.
 
 If a saved update repeatedly fails, select **Start the project update again**. Confirm to discard its cached package, then check the latest release again. Installed applications and settings are kept.
+
+Updates reuse `~/.config/grandma-linux/profile.yaml`. To change component selection, preview and apply it with **Installer**, or pass `--config profile.yaml` to `grandma-update --apply`. Profile changes are reported and retained across a required reboot. See [Profiles](PROFILES.md).

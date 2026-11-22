@@ -53,7 +53,9 @@ else:
     sys.exit('Log into the KDE Wayland desktop in the VM before running this test.')
 result['phase'] = 'setup'
 save_result()
-with subprocess.Popen(['bash', str(root / 'setup.sh'), '--lang=pt-BR'], env=env,
+setup_command=['bash',str(root/'setup.sh'),'--yes','--no-interactive']
+setup_command+=['--config',str(root/'input-profile.yaml')] if env.get('GRANDMA_TEST_CUSTOM_PROFILE')=='1' else ['--lang=pt-BR']
+with subprocess.Popen(setup_command, env=env,
                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as setup:
     for line in setup.stdout:
         sys.stdout.write(line)
@@ -63,7 +65,7 @@ with subprocess.Popen(['bash', str(root / 'setup.sh'), '--lang=pt-BR'], env=env,
 result['setup_exit_code'] = setup.returncode
 status = subprocess.run(['rpm-ostree', 'status', '--json'], check=True, capture_output=True, text=True)
 deployments = json.loads(status.stdout)['deployments']
-if setup.returncode == 0 and deployments and not deployments[0].get('booted', False):
+if setup.returncode == 75 or setup.returncode == 0 and deployments and not deployments[0].get('booted', False):
     result.update(status='reboot-required', phase='reboot-required', reboot_required=True, finished_at=datetime.now(timezone.utc).isoformat())
     save_result()
     sys.exit(75)
@@ -80,6 +82,14 @@ if setup.returncode == 0 and env.get('GRANDMA_TEST_UPDATE') == '1':
         result.update(status='failed', phase='project-update-failed', finished_at=datetime.now(timezone.utc).isoformat())
         save_result()
         sys.exit(update.returncode)
+if setup.returncode == 0 and env.get('GRANDMA_TEST_PROFILES') == '1':
+    result['phase']='profile-acceptance';save_result()
+    with subprocess.Popen(['python3',str(root/'tests/profile-guest.py')],env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True) as profiles_test:
+        for line in profiles_test.stdout:progress(line.rstrip('\n'))
+        profiles_test.wait()
+    result['profile_exit_code']=profiles_test.returncode
+    if profiles_test.returncode:
+        result.update(status='failed',phase='profile-acceptance-failed',finished_at=datetime.now(timezone.utc).isoformat());save_result();sys.exit(profiles_test.returncode)
 result['phase'] = 'validation'
 save_result()
 with (root / 'validation-report.json').open('w') as report:

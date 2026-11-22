@@ -112,7 +112,9 @@ def record_install(root):
     if version_tuple(version) is None and not (version.endswith('-dev') and version_tuple(version[:-4]) is not None):raise UpdateError('release')
     path=state_dir()/'installation.json';path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
     temporary=path.with_suffix('.partial')
-    temporary.write_text(json.dumps(dict(version=version,installed_at=datetime.now(timezone.utc).isoformat(),repository=REPOSITORY,revision=(root/'SOURCE_REVISION').read_text().strip() if (root/'SOURCE_REVISION').is_file() else None),indent=2)+'\n')
+    existing=json.loads(path.read_text()) if path.is_file() else {}
+    existing.update(version=version,installed_at=datetime.now(timezone.utc).isoformat(),repository=REPOSITORY,revision=(root/'SOURCE_REVISION').read_text().strip() if (root/'SOURCE_REVISION').is_file() else None)
+    temporary.write_text(json.dumps(existing,indent=2)+'\n')
     temporary.replace(path)
 
 
@@ -157,7 +159,7 @@ def discard_pending():
         clear_pending()
 
 
-def _apply(release=None,language='en',progress=None):
+def _apply(release=None,language='en',progress=None,config=None):
     directory=state_dir();directory.mkdir(parents=True,exist_ok=True,mode=0o700)
     report=progress or (lambda stage,value=None:None)
     with (directory/'project-update.lock').open('a') as lock:
@@ -190,7 +192,9 @@ def _apply(release=None,language='en',progress=None):
                 report('verify')
                 root=extract(archive,Path(folder),release['tag'])
                 report('install')
-                result=subprocess.run(['bash',str(root/'setup.sh'),'--update','--lang='+language],stdout=log,stderr=subprocess.STDOUT)
+                command=['bash',str(root/'setup.sh'),'--update','--yes']
+                if config is not None:command+=['--config',str(Path(config).resolve())]
+                result=subprocess.run(command,stdout=log,stderr=subprocess.STDOUT)
             except (OSError,tarfile.TarError,ValueError) as error:raise UpdateError('package') from error
             if result.returncode==75:
                 private_json(pending_path(),dict(release=release,phase='reboot-required',boot_id=boot_id()))
@@ -201,8 +205,8 @@ def _apply(release=None,language='en',progress=None):
     return 0
 
 
-def apply(release=None,language='en',progress=None):
-    try:return _apply(release,language,progress)
+def apply(release=None,language='en',progress=None,config=None):
+    try:return _apply(release,language,progress,config)
     except UpdateError as error:
         if str(error)!='busy':
             try:
@@ -229,6 +233,7 @@ def main():
     actions.add_argument('--apply',action='store_true',help='Check and install the latest stable release, or resume a pending update.')
     actions.add_argument('--discard-pending',action='store_true',help='Discard the saved update package; keep installed applications and settings.')
     actions.add_argument('--check',action='store_true',help='Show the current version and available update.')
+    parser.add_argument('--config',type=Path,help='Use these preferences for the update; they are saved before a package reboot.')
     parser.add_argument('--lang',choices=['en','pt-BR'],default='en')
     parser.add_argument('--yes',action='store_true',help='Confirm installation without a prompt.')
     parser.add_argument('--dry-run',action='store_true');args=parser.parse_args()
@@ -251,7 +256,7 @@ def main():
         if not args.yes:
             answer=input(('Instalar ' if pt else 'Install ')+release['tag']+'? [y/N] ')
             if answer.lower() not in {'y','yes','s','sim'}:return 0
-        code=apply(release,args.lang,lambda stage,value=None:print(stage+((' '+str(value)+'%') if value is not None else ''),flush=True))
+        code=apply(release,args.lang,lambda stage,value=None:print(stage+((' '+str(value)+'%') if value is not None else ''),flush=True),config=args.config)
         print(('Reinicie e execute este comando novamente.' if pt else 'Restart and run this command again.') if code==75 else ('Atualização concluída.' if pt else 'Update complete.'))
         return code
     except (EOFError,KeyboardInterrupt):return 130

@@ -11,3 +11,5 @@ The default bundle is `~/.local/share/grandma-linux/backups/local`. To move it l
 Preserve this folder during reinstall, or copy it elsewhere first. Formatting the disk also erases a backup on that disk. This is a personal-file backup, not a system image. After reinstall, run Grandma Linux setup, open Recover Files and select the preserved bundle.
 
 Failures retain the previous backup. Retention applies only to snapshots tagged for this integration. Files from unrelated backup sets are not removed. Restore verifies recovered data and never replaces live files.
+
+When present, the portable `~/.config/grandma-linux/profile.yaml` is also copied. A safe restore places it under `.config/grandma-linux/profile.yaml` in the new recovery folder; select that file with Installer to reuse its preferences. It does not overwrite the live profile.

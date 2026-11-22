@@ -23,3 +23,5 @@ O segundo comando pede confirmação. Se precisar reiniciar, execute-o novamente
 Enquanto não houver uma release estável publicada com o pacote de atualização, a ferramenta informará que não há versão disponível. Ela não instala branches de desenvolvimento.
 
 Se uma atualização salva falhar repetidamente, escolha **Recomeçar a atualização do projeto**. Confirme para descartar o pacote salvo e busque a versão mais recente novamente. Os aplicativos instalados e suas configurações são mantidos.
+
+As atualizações usam `~/.config/grandma-linux/profile.yaml`. Para mudar os componentes, confira e aplique o perfil pelo **Instalador**, ou passe `--config perfil.yaml` ao comando `grandma-update --apply`. As escolhas ficam salvas mesmo se precisar reiniciar. Veja [perfis](PROFILES.pt-BR.md).

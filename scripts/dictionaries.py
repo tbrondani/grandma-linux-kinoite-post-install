@@ -15,6 +15,7 @@ import struct
 import tempfile
 import unicodedata
 import urllib.request
+from downloads import open_url
 import zipfile
 
 class PlainText(HTMLParser):
@@ -29,7 +30,7 @@ def normalize(word):
 def download(package,cache):
     path=cache/f'{package["dict_id"]}-{package["sha256"]}.download'
     if path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==package['sha256']:return path
-    with urllib.request.urlopen(package['url'],timeout=90) as response:
+    with open_url(package['url'],timeout=90) as response:
         payload=response.read(100*1024*1024+1)
     if len(payload)>100*1024*1024 or hashlib.sha256(payload).hexdigest()!=package['sha256']:
         raise RuntimeError(f'Dictionary checksum mismatch: {package["dict_id"]}')

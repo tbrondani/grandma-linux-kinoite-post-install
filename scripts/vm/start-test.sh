@@ -3,11 +3,19 @@
 set -Eeuo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 VM_NAME=${VM_NAME:-fedora-kinoite-test-v2}
-VM_USER=${VM_USER:-maria}
+if [[ -n ${VM_CONFIG:-} ]]; then
+    vm_values=$(python3 "$ROOT/scripts/vm/profile.py" "$VM_CONFIG")
+    mapfile -t vm_values <<< "$vm_values"
+    VM_USER=${VM_USER:-${vm_values[0]}}
+    if [[ ${vm_values[1]} == 0 && ${FRESH:-1} == 1 ]]; then
+        echo 'Use FRESH=0 for a new-VM profile without auto-login; clean-baseline preparation requires auto-login.' >&2; exit 2
+    fi
+fi
+VM_USER=${VM_USER:-tester}
 VM_HOST=${VM_HOST:-}
 URI=${LIBVIRT_URI:-qemu:///system}
 if [[ ${1:-} == --help ]]; then
-    printf 'Usage: bash scripts/vm/start-test.sh\nDefault VM user: maria. Override VM_USER or VM_HOST if needed.\nRequires an installed VM, a logged-in KDE desktop, and sshd. SSH can ask for your password.\n'
+    printf 'Usage: bash scripts/vm/start-test.sh\nDefault VM user: tester. Override VM_USER or VM_HOST if needed.\nRequires an installed VM, a logged-in KDE desktop, and sshd. SSH can ask for your password.\n'
     exit 0
 fi
 # Keep console output and a machine-readable result for unattended checks.
@@ -16,6 +24,8 @@ log=$(mktemp "$ROOT/test-results/deploy-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX.log")
 summary="${log%.log}.json"
 phase=preflight
 TEST_UPDATE=${TEST_UPDATE:-0}
+TEST_PROFILES=${TEST_PROFILES:-0}
+[[ $TEST_PROFILES == 0 || $TEST_PROFILES == 1 ]] || exit 2
 [[ $TEST_UPDATE == 0 || $TEST_UPDATE == 1 ]] || { echo 'TEST_UPDATE must be 0 or 1.' >&2; exit 2; }
 remote_dir=''
 declare -a ssh_options=()
@@ -40,50 +50,44 @@ PYTHON
 }
 trap finish EXIT
 printf 'Deploy log: %s\n' "$log"
+(( EUID != 0 )) || { echo 'Run this script as your desktop user, without sudo in front.' >&2; exit 2; }
 [[ $VM_USER =~ ^[a-z_][a-z0-9_-]*$ ]] || { echo 'Set VM_USER to the desktop user in the VM.' >&2; exit 2; }
 for tool in virsh ssh scp tar python3; do command -v "$tool" >/dev/null || { echo "Missing: $tool" >&2; exit 1; }; done
-virsh_cmd=(virsh --connect "$URI")
-if [[ $URI == qemu:///system ]]; then
-    phase=host-authentication
-    sudo -v
-    virsh_cmd=(sudo -n virsh --connect "$URI")
+if [[ $URI != qemu:///system ]]; then
+    echo 'The test runner requires qemu:///system.' >&2; exit 2
 fi
-if ! "${virsh_cmd[@]}" dominfo "$VM_NAME" >/dev/null 2>&1; then
-    VM_NAME="$VM_NAME" VM_USER="$VM_USER" LIBVIRT_URI="$URI" bash "$ROOT/scripts/vm/create.sh"
+phase=host-authentication
+host_work=$(mktemp -d)
+host_report="$host_work/host.json"
+(umask 077; : > "$host_report")
+host_args=(--vm "$VM_NAME" --user "$VM_USER" --uri "$URI" --report "$host_report")
+if [[ ${FRESH:-1} == 1 ]]; then host_args+=(--fresh); fi
+if [[ -n $VM_HOST ]]; then host_args+=(--host "$VM_HOST"); fi
+if [[ -n ${ISO_PATH:-} ]]; then host_args+=(--iso "$ISO_PATH"); fi
+host_args+=(--fedora "${FEDORA_VERSION:-45}")
+if [[ -n ${VM_CONFIG:-} ]]; then
+    host_args+=(--locale "${vm_values[2]}")
+    if [[ ${vm_values[1]} == 0 ]]; then host_args+=(--no-autologin); fi
 fi
-if [[ ${FRESH:-1} == 1 ]] && sudo test -f "/var/lib/libvirt/images/grandma-baselines/$VM_NAME/base.qcow2"; then
-    phase=baseline-restore
-    bash "$ROOT/scripts/vm/baseline.sh" restore
+# A single sudo process owns the complete host phase. Child helpers run inside
+# that authorized process, so neither ticket expiry nor PPID scope can re-prompt.
+if ! sudo -- /usr/bin/python3 "$ROOT/scripts/vm/prepare-host.py" "${host_args[@]}"; then
+    rm -rf -- "$host_work"; exit 1
 fi
-phase=vm-start
-echo "Checking VM: $VM_NAME"
-state=$(LC_ALL=C "${virsh_cmd[@]}" domstate "$VM_NAME")
-case $state in
-    running) echo "VM is running." ;;
-    'shut off') "${virsh_cmd[@]}" start "$VM_NAME" ;;
-    *) printf 'VM state requires attention: %s\n' "$state" >&2; exit 1 ;;
-esac
-# Read the SPICE address through the already authorized connection.
-# remote-viewer connects to the display directly, avoiding a second Polkit login.
-if command -v remote-viewer >/dev/null; then
-    display=$("${virsh_cmd[@]}" domdisplay "$VM_NAME")
-    if [[ -n $display ]]; then
-        echo 'Opening VM display...'
+VM_HOST=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["host"])' "$host_report")
+display=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["display"])' "$host_report")
+rm -rf -- "$host_work"
+# A separate libvirt GUI can trigger its own Polkit authentication. Keep it
+# opt-in; an already open virt-manager display continues to work normally.
+if [[ ${OPEN_VM_DISPLAY:-0} == 1 ]]; then
+    if [[ -n $display ]] && command -v remote-viewer >/dev/null; then
         remote-viewer "$display" >/dev/null 2>&1 &
+    elif command -v virt-manager >/dev/null; then
+        echo 'The optional viewer may request its own graphical authorization.'
+        virt-manager --connect "$URI" --show-domain-console "$VM_NAME" >/dev/null 2>&1 &
     fi
-elif command -v virt-manager >/dev/null; then
-    virt-manager --connect "$URI" --show-domain-console "$VM_NAME" >/dev/null 2>&1 &
 else
-    echo 'Install virt-viewer on the host to open the graphical display automatically.'
-fi
-if [[ -z $VM_HOST ]]; then
-    echo "Waiting for the VM network address..."
-    for ((attempt=0; attempt<60; attempt++)); do
-        if (( attempt % 10 == 0 )); then echo "Waiting for DHCP ($((attempt * 2)) seconds)..."; fi
-        VM_HOST=$("${virsh_cmd[@]}" domifaddr "$VM_NAME" --source lease | awk '$3 == "ipv4" {sub(/\/.*/, "", $4); print $4; exit}')
-        [[ -z $VM_HOST ]] || break
-        sleep 2
-    done
+    echo 'Host preparation complete. Use the existing VM window for the visual review.'
 fi
 [[ $VM_HOST =~ ^[a-zA-Z0-9.:_-]+$ ]] || { echo 'Cannot discover VM address. Set VM_HOST explicitly.' >&2; exit 1; }
 target="$VM_USER@$VM_HOST"
@@ -131,11 +135,15 @@ tar --exclude=.git --exclude=.vm-state --exclude=test-results --exclude=__pycach
 remote_dir=$(ssh "${ssh_options[@]}" "$target" 'mkdir -p "$HOME/.local/state/grandma-linux-tests" && mktemp -d "$HOME/.local/state/grandma-linux-tests/run.XXXXXXXX"')
 [[ $remote_dir =~ ^/home/[a-zA-Z0-9_-]+/\.local/state/grandma-linux-tests/run\.[a-zA-Z0-9]+$ ]] || exit 1
 scp "${ssh_options[@]}" "$work/project.tar.gz" "$target:$remote_dir/project.tar.gz"
+if [[ -n ${TEST_PROFILE:-} ]]; then
+    [[ -f $TEST_PROFILE ]] || { echo 'TEST_PROFILE not found' >&2; exit 2; }
+    scp "${ssh_options[@]}" "$TEST_PROFILE" "$target:$remote_dir/input-profile.yaml"
+fi
 ssh "${ssh_options[@]}" "$target" "tar -xzf $remote_dir/project.tar.gz -C $remote_dir"
 for ((pass=0; pass<3; pass++)); do
     code=0
     phase="guest-setup-$((pass + 1))"
-    ssh "${ssh_options[@]}" "$target" "GRANDMA_TEST_UPDATE=$TEST_UPDATE python3 $remote_dir/scripts/vm/run-guest.py" || code=$?
+    ssh "${ssh_options[@]}" "$target" "GRANDMA_TEST_UPDATE=$TEST_UPDATE GRANDMA_TEST_PROFILES=$TEST_PROFILES GRANDMA_TEST_CUSTOM_PROFILE=${TEST_PROFILE:+1} python3 $remote_dir/scripts/vm/run-guest.py" || code=$?
     if (( code == 75 )); then
         phase=reboot
         echo 'Rebooting the test VM for the pending deployment...'

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -79,6 +80,9 @@ class UserTools(unittest.TestCase):
                  patch.object(user_tools_setup.subprocess,'run'):
                 user_tools_setup.install(root)
                 user_tools_setup.install(root)
+            base=home/'.local/libexec/grandma-linux'
+            result=subprocess.run([sys.executable,'-I','-c','import sys;sys.path.insert(0,'+repr(str(base))+');import reading,profiles,downloads,project_update'],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
             for language in ['en','pt-BR']:
                 installed=home/'.local/libexec/grandma-linux/guides'/f'manual.{language}.json'
                 self.assertEqual(installed.read_bytes(),(root/'data/guides'/installed.name).read_bytes())
@@ -87,6 +91,24 @@ class UserTools(unittest.TestCase):
             self.assertIn('Name[pt_BR]=Manual de uso',shortcuts[0].read_text())
             self.assertIn('manual-data',(desktop/'.grandma-linux-manual.html').read_text())
             backup.run.assert_not_called()
+
+    def test_installed_source_is_self_contained_and_replacement_failure_restores_it(self):
+        import user_tools_setup
+        root=Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder);binary=user_tools_setup.install_source(root,home)
+            destination=home/'.local/lib/grandma-linux/source'
+            original=(destination/'scripts/installer.py').read_bytes()
+            rename=Path.rename
+            def fail_staging(path,target):
+                if path.parent.name.startswith('source-stage-'):raise OSError('fixture staging failure')
+                return rename(path,target)
+            with patch.object(Path,'rename',fail_staging):
+                with self.assertRaisesRegex(OSError,'staging failure'):user_tools_setup.install_source(root,home)
+            self.assertEqual((destination/'scripts/installer.py').read_bytes(),original)
+            result=subprocess.run([str(binary),'--dry-run'],env=dict(os.environ,HOME=str(home),XDG_CONFIG_HOME=str(home/'.config')),capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertIn('"ai": false',result.stdout)
 
     def test_update_ui_resumes_the_saved_release(self):
         import project_update

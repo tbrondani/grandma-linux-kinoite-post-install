@@ -14,3 +14,5 @@ The manual content is `data/guides/manual.en.json` and `manual.pt-BR.json`. Its 
 For larger text, open **System → Reading comfort**. Choose 12 or 14 pt, or restore the previous settings. See [Reading comfort](ACCESSIBILITY.md).
 
 Open **Updates** on the desktop or in **System**. Choose **System and applications** for Discover, or **Grandma Linux setup and manual** for a stable project release. The window shows the installed version, progress and the last update log. If asked, restart and select the same project update to finish. See [Updates](UPDATES.md).
+
+Open **Installer** on the desktop to install, reconfigure or update with a saved YAML profile. Start with [Profiles](PROFILES.md) for custom choices and history.

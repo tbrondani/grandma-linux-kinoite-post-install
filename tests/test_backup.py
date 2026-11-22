@@ -35,6 +35,17 @@ class BackupTests(unittest.TestCase):
         self.assertEqual((self.repository/'recovery-key.txt').stat().st_mode&0o777,0o600)
         self.assertIsNone(json.loads(self.backup.status_path.read_text())['error'])
 
+    def test_profile_is_backed_up_and_recovered_without_overwriting_live_preferences(self):
+        self.backup.sources=Backup.sources.__get__(self.backup,Backup)
+        profile=self.backup.config_dir/'profile.yaml';profile.parent.mkdir(parents=True)
+        original='schema_version: 1\nfeatures:\n  games: false\n';profile.write_text(original)
+        with patch('backup.subprocess.check_output',return_value=str(self.source)):
+            self.backup.configure_local();self.backup.run()
+        snapshot=self.backup.snapshots()[0]['id'];profile.write_text('new live preferences')
+        restored=self.backup.restore(snapshot,self.root)
+        self.assertEqual((restored/'.config/grandma-linux/profile.yaml').read_text(),original)
+        self.assertEqual(profile.read_text(),'new live preferences')
+
     def test_retention_leaves_foreign_snapshots(self):
         config=self.backup.configure_local()
         foreign=json.loads(self.backup.restic(config,'backup','--json','--tag','other-project','--',str(self.source)).splitlines()[-1])['snapshot_id']

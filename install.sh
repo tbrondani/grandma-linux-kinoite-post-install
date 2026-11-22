@@ -21,11 +21,11 @@ bootstrap() (
     [[ -f $tmp/source/setup.sh ]] || { printf 'Archive does not contain setup.sh\n' >&2; exit 1; }
     # Reserve stdin for authorization and other interactive tools when piped from curl.
     if [[ -t 0 ]]; then
-        bash "$tmp/source/setup.sh" "$@"
+        GRANDMA_BOOTSTRAP_REF="$ref" bash "$tmp/source/setup.sh" "$@"
     elif [[ -r /dev/tty ]] && ( : < /dev/tty ) 2>/dev/null; then
-        bash "$tmp/source/setup.sh" "$@" < /dev/tty
+        GRANDMA_BOOTSTRAP_REF="$ref" bash "$tmp/source/setup.sh" "$@" < /dev/tty
     else
-        bash "$tmp/source/setup.sh" "$@" < /dev/null
+        GRANDMA_BOOTSTRAP_REF="$ref" bash "$tmp/source/setup.sh" "$@" < /dev/null
     fi
 )
 bootstrap "$@"

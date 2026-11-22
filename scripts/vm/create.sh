@@ -4,7 +4,21 @@
 set -Eeuo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 VM_NAME=${VM_NAME:-fedora-kinoite-test-v2}
-VM_USER=${VM_USER:-maria}
+if [[ ${1:-} == --config ]]; then
+    [[ $# == 2 ]] || { echo 'Usage: create.sh [--config profile.yaml]' >&2; exit 2; }
+    VM_CONFIG=$2
+fi
+if [[ -n ${VM_CONFIG:-} ]]; then
+    vm_values=$(python3 "$ROOT/scripts/vm/profile.py" "$VM_CONFIG")
+    mapfile -t vm_values <<< "$vm_values"
+    [[ ${#vm_values[@]} == 3 ]] || exit 2
+    VM_USER=${vm_values[0]}
+    VM_AUTOLOGIN=${vm_values[1]}
+    VM_LOCALE=${vm_values[2]}
+fi
+export VM_AUTOLOGIN=${VM_AUTOLOGIN:-1}
+export VM_LOCALE=${VM_LOCALE:-pt_BR.UTF-8}
+VM_USER=${VM_USER:-tester}
 URI=${LIBVIRT_URI:-qemu:///system}
 FEDORA_VERSION=${FEDORA_VERSION:-45}
 [[ $FEDORA_VERSION =~ ^[0-9]+$ ]] || { echo 'Invalid FEDORA_VERSION' >&2; exit 2; }
@@ -16,13 +30,20 @@ for tool in virt-install ssh-keygen python3 openssl; do
     command -v "$tool" >/dev/null || { echo "Missing host command: $tool" >&2; exit 1; }
 done
 [[ -f $ISO_PATH ]] || { printf 'Set ISO_PATH to your Fedora Kinoite installer ISO. Not found: %s\n' "$ISO_PATH" >&2; exit 1; }
-virsh_cmd=(virsh --connect "$URI")
-if [[ $URI == qemu:///system ]]; then
-    sudo -v
-    virsh_cmd=(sudo -n virsh --connect "$URI")
+if (( EUID != 0 )); then
+    exec sudo -- /usr/bin/env VM_NAME="$VM_NAME" VM_USER="$VM_USER" LIBVIRT_URI="$URI" VM_AUTOLOGIN="$VM_AUTOLOGIN" VM_LOCALE="$VM_LOCALE" FEDORA_VERSION="$FEDORA_VERSION" ISO_PATH="$ISO_PATH" /bin/bash "$ROOT/scripts/vm/create.sh"
 fi
+virsh_cmd=(virsh --connect "$URI")
 if "${virsh_cmd[@]}" dominfo "$VM_NAME" >/dev/null 2>&1; then echo 'VM already exists; not replacing it.' >&2; exit 1; fi
 state_dir="$ROOT/.vm-state"
+restore_key_owner() {
+    if [[ ${SUDO_UID:-0} =~ ^[0-9]+$ && ${SUDO_GID:-0} =~ ^[0-9]+$ ]] && (( ${SUDO_UID:-0} != 0 )); then
+        for path in "$state_dir" "$state_dir/test-key" "$state_dir/test-key.pub" "$state_dir/ks.cfg"; do
+            if [[ -e $path && ! -L $path ]]; then chown "$SUDO_UID:$SUDO_GID" "$path"; fi
+        done
+    fi
+}
+trap restore_key_owner EXIT
 mkdir -p "$state_dir"
 chmod 700 "$state_dir"
 key="$state_dir/test-key"
@@ -38,63 +59,18 @@ export VM_PASSWORD_HASH
 export VM_USER
 export VM_PUBLIC_KEY
 VM_PUBLIC_KEY=$(cat "$key.pub")
-python3 - "$state_dir/ks.cfg" <<'PYTHON'
-import os
-import subprocess
-from pathlib import Path
-import sys
-version = os.environ['FEDORA_VERSION']
-user = os.environ['VM_USER']
-key = os.environ['VM_PUBLIC_KEY']
-password = os.environ['VM_PASSWORD_HASH']
-ks = f'''text
-lang pt_BR.UTF-8
-keyboard --xlayouts=br
-timezone Europe/Lisbon --utc
-network --bootproto=dhcp --device=link --activate
-rootpw --lock
-user --name={user} --groups=wheel --iscrypted --password={password}
-sshkey --username={user} "{key}"
-firewall --enabled --service=ssh
-services --enabled=sshd
-selinux --enforcing
-ignoredisk --only-use=vda
-zerombr
-clearpart --all --initlabel --drives=vda
-autopart --type=plain
-ostreesetup --osname=fedora --remote=fedora --url=file:///ostree/repo --ref=fedora/{version}/x86_64/kinoite --nogpg
-reboot
-%post --erroronfail
-mkdir -p /etc/sddm.conf.d /etc/plasmalogin.conf.d
-cat > /etc/sddm.conf.d/grandma-test.conf <<SDDM
-[Autologin]
-User={user}
-Session=plasma.desktop
-Relogin=false
-SDDM
-if [ -f /usr/lib/systemd/system/plasmalogin.service ]; then
-    cp /etc/sddm.conf.d/grandma-test.conf /etc/plasmalogin.conf.d/zz-grandma-test.conf
-fi
-systemctl enable sshd
-# Disposable VM only: allow the test runner to install layered packages and reboot.
-echo '{user} ALL=(root) NOPASSWD: /usr/bin/rpm-ostree, /usr/bin/systemctl reboot' > /etc/sudoers.d/grandma-test
-chmod 440 /etc/sudoers.d/grandma-test
-systemctl set-default graphical.target
-%end
-'''
-Path(sys.argv[1]).write_text(ks)
-PYTHON
+python3 "$ROOT/scripts/vm/kickstart.py" "$state_dir/ks.cfg"
 # Libvirt's qemu user must not depend on access to the host user's home.
 media_dir=/var/lib/libvirt/images/grandma-media
 media_path="$media_dir/Fedora-Kinoite-${FEDORA_VERSION}-installer.iso"
-sudo install -d -m 0755 "$media_dir"
-if ! sudo test -f "$media_path" || ! sudo cmp -s -- "$ISO_PATH" "$media_path"; then
+install -d -m 0755 "$media_dir"
+if ! test -f "$media_path" || ! cmp -s -- "$ISO_PATH" "$media_path"; then
     echo 'Copying installer ISO to libvirt storage...'
-    sudo install -m 0644 -- "$ISO_PATH" "$media_path"
+    install -m 0644 -- "$ISO_PATH" "$media_path"
 fi
-if command -v restorecon >/dev/null; then sudo restorecon -R "$media_dir"; fi
+if command -v restorecon >/dev/null; then restorecon -R "$media_dir"; fi
 ISO_PATH=$media_path
-sudo virt-install --connect "$URI" --name "$VM_NAME" --memory 8192 --vcpus 4 \
+virt-install --connect "$URI" --name "$VM_NAME" --memory 8192 --vcpus 4 \
     --cpu host-passthrough --disk size=40,format=qcow2,bus=virtio \
     --location "$ISO_PATH,kernel=images/pxeboot/vmlinuz,initrd=images/pxeboot/initrd.img" --initrd-inject "$state_dir/ks.cfg" \
     --extra-args "inst.ks=file:/ks.cfg inst.stage2=hd:LABEL=Fedora-${FEDORA_VERSION}-Kinoite-x86_64" --os-variant fedora-unknown \

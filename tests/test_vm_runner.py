@@ -50,6 +50,34 @@ class Runner(unittest.TestCase):
         self.assertEqual(self.run_guest().returncode,0)
         self.assertEqual((self.root/'setup.log').read_text().count('Guest test started:'),2)
 
+    def test_profile_installer_reboot_code_is_not_reported_as_failure(self):
+        (self.root/'setup.sh').write_text('exit 75\n')
+        result=self.run_guest();self.assertEqual(result.returncode,75)
+        report=json.loads((self.root/'execution.json').read_text())
+        self.assertEqual(report['status'],'reboot-required');self.assertTrue(report['reboot_required'])
+        self.assertFalse((self.root/'validation-report.json').exists())
+
+    def test_host_uses_one_sudo_process_and_does_not_start_a_second_gui(self):
+        import shlex
+        counter=self.root/'sudo-calls'
+        self.command('virsh','exit 0')
+        self.command('ssh','exit 88')
+        self.command('virt-manager','echo unexpected-viewer >&2; exit 91')
+        self.command('sudo','echo call >> '+shlex.quote(str(counter))+'\n'+
+                     """while [[ $# -gt 0 ]]; do
+if [[ $1 == --report ]]; then
+printf '%s\n' '{"host":"127.0.0.1","display":""}' > "$2"
+exit 0
+fi
+shift
+done
+exit 2""")
+        self.command('python3','if [[ $1 == - && ${2:-} == 127.0.0.1 ]]; then exit 0; fi\nexec '+shlex.quote(sys.executable)+' "$@"')
+        result=subprocess.run(['bash',str(self.root/'scripts/vm/start-test.sh')],env=dict(self.env,OPEN_VM_DISPLAY='0'),capture_output=True,text=True)
+        self.assertEqual(result.returncode,88,result.stdout+result.stderr)
+        self.assertEqual(counter.read_text().splitlines(),['call'])
+        self.assertNotIn('unexpected-viewer',result.stderr)
+
     def test_host_preflight_failure_still_writes_log_and_exit_status(self):
         result=subprocess.run(['bash',str(self.root/'scripts/vm/start-test.sh')],env=dict(self.env,VM_USER='Invalid!'),capture_output=True,text=True)
         self.assertEqual(result.returncode,2,result.stderr)

@@ -131,6 +131,7 @@ class Updates(unittest.TestCase):
         root=Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             home=Path(directory);desktop=home/'Desktop';desktop.mkdir()
+            existing=home/'.config/grandma-linux/backup.json';existing.parent.mkdir(parents=True);existing.write_text('{}')
             with patch.object(user_tools_setup.Path,'home',return_value=home),patch.dict(user_tools_setup.os.environ,{'XDG_CONFIG_HOME':str(home/'.config'),'XDG_DATA_HOME':str(home/'.local/share')}),patch.object(user_tools_setup.subprocess,'check_output',return_value=str(desktop)),patch.object(user_tools_setup.subprocess,'run'),patch.object(user_tools_setup,'Backup') as backup:
                 user_tools_setup.install(root,update=True)
                 backup.assert_not_called()
