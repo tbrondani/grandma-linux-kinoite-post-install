@@ -54,3 +54,5 @@ Abra **Atualizações** na área de trabalho ou em **Sistema**. Escolha **Config
 ## Perfis de instalação
 
 Abra **Instalador** para reutilizar as preferências ou escolher um YAML. Use `./setup.sh --config perfil.yaml --dry-run` para conferir sem alterar nada. Veja [perfis e reinstalação](PROFILES.pt-BR.md).
+
+Use a mesma URL com `bash -s -- --check` para consultar atualizações de uma instalação existente, sem aplicar mudanças. Use `bash -s -- --mode=update` para consultar e aplicar uma atualização publicada do projeto. Esses comandos usam o perfil salvo. Sem idioma informado, a primeira instalação usa inglês; as atualizações mantêm o idioma salvo.

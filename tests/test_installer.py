@@ -79,6 +79,13 @@ class Installer(unittest.TestCase):
         code,output=self.invoke('--template',str(destination),'--dry-run')
         self.assertEqual(code,0,output);self.assertFalse(destination.exists())
 
+    def test_first_install_defaults_to_english_on_a_portuguese_host(self):
+        with patch.dict(os.environ,{'LANG':'pt_BR.UTF-8'}),patch('builtins.input',side_effect=['1','n']):
+            code,output=self.invoke('--interactive','--dry-run')
+        self.assertEqual(code,0,output)
+        self.assertIn('Grandma Linux · Installer',output)
+        self.assertIn('"language": "en"',output)
+
     def test_unknown_profile_fields_fail_before_state_creation(self):
         path=self.home/'bad.yaml';path.write_text('unknown: true\n')
         code,output=self.invoke('--config',str(path),'--yes')

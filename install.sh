@@ -3,6 +3,15 @@
 # Keep all work inside a function so a truncated download cannot start installation.
 bootstrap() (
     set -Eeuo pipefail
+    # Use the installed updater for a read-only check, without a source download.
+    if [[ $# == 1 && $1 == --check ]]; then
+        local updater="$HOME/.local/bin/grandma-update"
+        [[ -x $updater ]] || {
+            printf 'Grandma Linux is not installed. Run this command without --check to install.\n' >&2; exit 2;
+        }
+        "$updater" --check
+        exit $?
+    fi
     local ref=${GRANDMA_REF:-latest}
     local repository=https://github.com/tbrondani/grandma-linux-kinoite-post-install
     local resolved

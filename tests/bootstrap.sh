@@ -49,4 +49,15 @@ for redirect in 'https://example.invalid/releases/tag/v0.1.0' 'https://github.co
 done
 if FAIL_DOWNLOAD=1 bash "$ROOT/install.sh" >/dev/null 2>&1; then exit 1; fi
 if GRANDMA_REF='../bad' bash "$ROOT/install.sh" >/dev/null 2>&1; then exit 1; fi
+mkdir -p "$work/home/.local/bin"
+cat > "$work/home/.local/bin/grandma-update" <<'SCRIPT'
+#!/usr/bin/env bash
+[[ $1 == --check ]] || exit 2
+printf 'Update check only\n'
+SCRIPT
+chmod +x "$work/home/.local/bin/grandma-update"
+: > "$CURL_CALLS"
+output=$(HOME="$work/home" bash "$ROOT/install.sh" --check)
+[[ $output == 'Update check only' && ! -s $CURL_CALLS ]]
+if HOME="$work/not-installed" bash "$ROOT/install.sh" --check >/dev/null 2>&1; then exit 1; fi
 printf 'PASS: bootstrap download, piped execution, arguments, download failure, invalid reference\n'

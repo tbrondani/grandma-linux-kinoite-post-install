@@ -150,7 +150,6 @@ def check_patch(patch):
 
 def load(root,path=None):
     base=copy.deepcopy(DEFAULT)
-    if os.environ.get('LANG','').startswith('pt_BR'):base['language']='pt-BR'
     saved=profile_path()
     prior=previous()
     if prior:base=merge(base,prior)

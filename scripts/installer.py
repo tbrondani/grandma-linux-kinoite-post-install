@@ -27,7 +27,7 @@ def template(destination,dry_run=False):
 
 
 def wizard(args):
-    language=args.lang or ('pt-BR' if os.environ.get('LANG','').startswith('pt_BR') else 'en')
+    language=args.lang or (profiles.previous() or {}).get('language','en')
     say=lambda en,pt:print(text(en,pt,language))
     say('\nGrandma Linux · Installer','\nGrandma Linux · Instalador')
     print('─' * 44)
