@@ -1,19 +1,20 @@
-# Prepare a release
+# Releases
 
-All changes to main require a reviewed pull request. Complete the applicable checks in [Testing](../TESTING.md) and record known limits in the release notes.
+[Release Please](https://github.com/googleapis/release-please-action) collects changes merged into main in a release pull request. It updates `VERSION` and `CHANGELOG.md`. The first release is `v0.1.0`.
 
-1. Merge the tested changes through the pull request.
-2. In GitHub Actions, run **Prepare release draft** on main with a new version such as `v0.1.0`.
-3. Review the draft notes, source revision and attached archive/checksum.
-4. Publish the draft after release acceptance. Do not label untested hardware as supported.
-5. Test installation and update from that published version on the disposable VM before using it on the target PC.
+1. Merge feature and fix PRs into main. Use conventional commit titles such as `feat: add a tool` or `fix: resume an update`. Use squash merge to keep that title as the commit message.
+2. Review and merge the release PR when ready to publish.
+3. The workflow checks the tagged source, builds the installer archive and checksum, uploads both, and publishes the release. No manual workflow run is needed.
+4. Restore the clean test VM baseline and test installation through curl at the published tag. Test project updates before using them on a target PC.
 
-The workflow does not push source changes or publish the draft automatically. It runs local checks, builds `grandma-linux-vX.Y.Z.tar.gz` and its checksum, and creates a release draft targeting the selected main commit. It refuses an existing tag. The archive VERSION is the release version; SOURCE_REVISION identifies the source commit. The source tree can remain marked as development until the next release.
+Repository setup: in **Settings → Actions → General → Workflow permissions**, enable **Allow GitHub Actions to create and approve pull requests**. The workflow uses the repository's `GITHUB_TOKEN`; it needs no personal token. Bot-created PRs do not trigger normal PR workflows with this token. The release workflow runs checks before automation and again before publishing.
 
-For a local package from a clean checkout:
+If packaging or upload fails, the release stays a draft. Inspect the failed run. Upload the missing verified archive/checksum from the same tagged commit, then publish the draft. Never reuse a published version for different content. Do not merge another release PR until that draft is resolved.
+
+Assets must be named `grandma-linux-vX.Y.Z.tar.gz` and `grandma-linux-vX.Y.Z.tar.gz.sha256`. The updater requires the archive's SHA256 digest from the GitHub API. Build from a clean tagged checkout with:
 
 ```sh
 python3 scripts/build-release.py v0.1.0 --output /tmp/grandma-release
 ```
 
-Upload the generated archive as a release asset, not GitHub's automatic source archive. The updater requires the asset's SHA256 digest from the GitHub API. Do not reuse a version for changed content. Publish a new patch release instead.
+Release automation does not establish hardware support. Keep the known limits in the release notes and complete the applicable checks in [Testing](../TESTING.md).

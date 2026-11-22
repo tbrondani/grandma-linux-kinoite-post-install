@@ -1,45 +1,49 @@
-name: Prepare release draft
+name: Release Please
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Stable version, for example v0.1.0'
-        required: true
-        type: string
 permissions:
   contents: read
+concurrency:
+  group: grandma-releases
+  cancel-in-progress: false
 jobs:
-  draft:
+  release:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    concurrency:
-      group: grandma-release-draft
-      cancel-in-progress: false
+      pull-requests: write
     env:
-      RELEASE_TAG: ${{ inputs.version }}
-      RELEASE_OUTPUT: ${{ runner.temp }}/grandma-release
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Run checks
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install backup test dependency
+        run: sudo apt-get update && sudo apt-get install -y restic
+      - name: Run checks before release automation
         run: bash tests/check.sh
-      - name: Build verified update asset
-        run: python3 scripts/build-release.py "$RELEASE_TAG" --output "$RELEASE_OUTPUT"
-      - name: Create draft for maintainer review
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+      # GITHUB_TOKEN releases do not trigger another workflow. Package and publish
+      # here, leaving a recoverable draft if a build or upload fails.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        if: steps.release.outputs.release_created == 'true'
+        with:
+          ref: ${{ steps.release.outputs.tag_name }}
+      - name: Build and publish complete release
+        if: steps.release.outputs.release_created == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+          RELEASE_OUTPUT: ${{ runner.temp }}/grandma-release
         run: |
-          tag_status=0
-          git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1 || tag_status=$?
-          case "$tag_status" in
-            0) echo "This version tag already exists. Choose a new version." >&2; exit 1 ;;
-            2) ;;
-            *) echo "Could not check the remote version tag." >&2; exit "$tag_status" ;;
-          esac
-          gh release create "$RELEASE_TAG" \
-            --target "$GITHUB_SHA" --draft --title "Grandma Linux $RELEASE_TAG" \
-            --notes-file docs/RELEASE-NOTES.md \
+          bash tests/check.sh
+          python3 scripts/build-release.py "$RELEASE_TAG" --output "$RELEASE_OUTPUT"
+          gh release upload "$RELEASE_TAG" \
             "$RELEASE_OUTPUT/grandma-linux-$RELEASE_TAG.tar.gz" \
             "$RELEASE_OUTPUT/grandma-linux-$RELEASE_TAG.tar.gz.sha256"
+          gh release edit "$RELEASE_TAG" --draft=false --latest
