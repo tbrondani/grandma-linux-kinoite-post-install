@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/tbrondani/grandma-linux-kinoite-post-install/compare/v0.1.0...v0.1.1) (2026-11-22)
+
+
+### Bug Fixes
+
+* pin checks checkout action to a full commit SHA ([#4](https://github.com/tbrondani/grandma-linux-kinoite-post-install/issues/4)) ([2de1741](https://github.com/tbrondani/grandma-linux-kinoite-post-install/commit/2de17418aa43f6c8670cd5e642fcd4e3d1ec30c8))
+
 ## 0.1.0 (2026-11-22)
 
 
