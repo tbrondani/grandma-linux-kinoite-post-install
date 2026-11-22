@@ -43,7 +43,7 @@ curl -fsSL https://raw.githubusercontent.com/tbrondani/grandma-linux-kinoite-pos
 
 Remova `--dry-run` para instalar em uma VM de testes. O instalador baixa um arquivo compactado; não precisa de Git. Se precisar reiniciar, execute o mesmo comando novamente. Ainda não use na máquina principal.
 
-Para usar uma versão publicada, troque `main` pela tag na URL e passe `GRANDMA_REF=vX.Y.Z` ao Bash. Ainda não há release testada.
+Sem `GRANDMA_REF`, o instalador usa a última release estável publicada. Se não houver release, ele para. Para fixar uma versão, passe `GRANDMA_REF=vX.Y.Z` ao Bash; uma tag inexistente gera erro. Use `GRANDMA_REF=main` apenas para desenvolvimento. A URL acima carrega o bootstrap da main, mas o código instalado vem da release selecionada.
 
 Após a configuração, abra **Ajuda** ou **Manual de uso** na área de trabalho. Veja [backup local e recuperação](BACKUP.pt-BR.md).
 
