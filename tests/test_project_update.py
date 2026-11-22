@@ -64,11 +64,12 @@ class Updates(unittest.TestCase):
                 self.assertEqual(update.installed_version(),'0.1.0');self.assertTrue(update.pending_path().is_file())
                 self.assertEqual(update.archive_path().stat().st_mode&0o777,0o600)
                 def success(args,**kwargs):
+                    self.assertEqual(args[-2:],['--lang','pt-BR'])
                     update.record_install(Path(args[1]).parent)
                     return type('Result',(),{'returncode':0})()
                 run.side_effect=success
                 opener.return_value.open.side_effect=AssertionError('Retry must reuse the verified package')
-                self.assertEqual(update.apply(),0)
+                self.assertEqual(update.apply(requested_language='pt-BR'),0)
                 self.assertEqual(update.installed_version(),'0.2.0');self.assertFalse(update.pending_path().exists())
                 self.assertFalse(update.archive_path().exists())
 

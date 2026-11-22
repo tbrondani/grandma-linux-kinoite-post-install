@@ -186,6 +186,20 @@ def selected(root,profile):
     return [row for row in all_apps(root) if profile['applications'].get(row[0],True) and profile['features'].get(GROUPS.get(row[0],'games' if row[0] in GAME_IDS else ''),True)]
 
 
+def confirm_language(requested,current,can_prompt):
+    """An installation confirmation never implies consent to change language."""
+    if not current or requested==current:return requested
+    names={'en':'English','pt-BR':'Português (Brasil)'}
+    if not can_prompt:
+        print('Keeping installed language: '+names[current])
+        return current
+    question=(f'Trocar o idioma de {names[current]} para {names[requested]}? [s/N] '
+              if current=='pt-BR' else f'Change language from {names[current]} to {names[requested]}? [y/N] ')
+    try:answer=input(question).strip().lower()
+    except EOFError:answer=''
+    return requested if answer in {'y','yes','s','sim'} else current
+
+
 def previous():
     try:return json.loads(manifest_path().read_text()).get('profile')
     except (FileNotFoundError,ValueError):return None

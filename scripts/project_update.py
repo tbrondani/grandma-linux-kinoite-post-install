@@ -11,6 +11,8 @@ import re
 import subprocess
 import tarfile
 import tempfile
+import sys
+import profiles
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -159,7 +161,7 @@ def discard_pending():
         clear_pending()
 
 
-def _apply(release=None,language='en',progress=None,config=None):
+def _apply(release=None,language='en',progress=None,config=None,requested_language=None):
     directory=state_dir();directory.mkdir(parents=True,exist_ok=True,mode=0o700)
     report=progress or (lambda stage,value=None:None)
     with (directory/'project-update.lock').open('a') as lock:
@@ -193,6 +195,7 @@ def _apply(release=None,language='en',progress=None,config=None):
                 root=extract(archive,Path(folder),release['tag'])
                 report('install')
                 command=['bash',str(root/'setup.sh'),'--update','--yes']
+                if requested_language is not None:command+=['--lang',requested_language]
                 if config is not None:command+=['--config',str(Path(config).resolve())]
                 result=subprocess.run(command,stdout=log,stderr=subprocess.STDOUT)
             except (OSError,tarfile.TarError,ValueError) as error:raise UpdateError('package') from error
@@ -205,8 +208,8 @@ def _apply(release=None,language='en',progress=None,config=None):
     return 0
 
 
-def apply(release=None,language='en',progress=None,config=None):
-    try:return _apply(release,language,progress,config)
+def apply(release=None,language='en',progress=None,config=None,requested_language=None):
+    try:return _apply(release,language,progress,config,requested_language)
     except UpdateError as error:
         if str(error)!='busy':
             try:
@@ -234,10 +237,12 @@ def main():
     actions.add_argument('--discard-pending',action='store_true',help='Discard the saved update package; keep installed applications and settings.')
     actions.add_argument('--check',action='store_true',help='Show the current version and available update.')
     parser.add_argument('--config',type=Path,help='Use these preferences for the update; they are saved before a package reboot.')
-    parser.add_argument('--lang',choices=['en','pt-BR'],default='en')
+    parser.add_argument('--lang',choices=['en','pt-BR'])
     parser.add_argument('--yes',action='store_true',help='Confirm installation without a prompt.')
     parser.add_argument('--dry-run',action='store_true');args=parser.parse_args()
-    pt=args.lang=='pt-BR'
+    current_language=(profiles.previous() or {}).get('language')
+    language=args.lang or current_language or 'en'
+    pt=language=='pt-BR'
     try:
         if args.record_install:
             if args.dry_run:print('Record the installed Grandma Linux version after successful setup.')
@@ -253,10 +258,13 @@ def main():
             print('Ainda não há uma versão estável publicada.' if pt else 'No stable release is published yet.');return 0
         if not release['available']:
             print('Grandma Linux está atualizado.' if pt else 'Grandma Linux is up to date.');return 0
+        selected_language=None
+        if args.lang:
+            selected_language=profiles.confirm_language(args.lang,current_language,sys.stdin.isatty())
         if not args.yes:
             answer=input(('Instalar ' if pt else 'Install ')+release['tag']+'? [y/N] ')
             if answer.lower() not in {'y','yes','s','sim'}:return 0
-        code=apply(release,args.lang,lambda stage,value=None:print(stage+((' '+str(value)+'%') if value is not None else ''),flush=True),config=args.config)
+        code=apply(release,language,lambda stage,value=None:print(stage+((' '+str(value)+'%') if value is not None else ''),flush=True),config=args.config,requested_language=selected_language)
         print(('Reinicie e execute este comando novamente.' if pt else 'Restart and run this command again.') if code==75 else ('Atualização concluída.' if pt else 'Update complete.'))
         return code
     except (EOFError,KeyboardInterrupt):return 130

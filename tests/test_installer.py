@@ -86,6 +86,17 @@ class Installer(unittest.TestCase):
         self.assertIn('Grandma Linux · Installer',output)
         self.assertIn('"language": "en"',output)
 
+    def test_language_refusal_continues_reconfiguration_in_installed_language(self):
+        for answer,expected in [('n','en'),('s','pt-BR')]:
+            current=profiles.merge(profiles.DEFAULT,{'language':'en'})
+            profiles.private_json(profiles.manifest_path(),{'version':'0.1.0','profile':current})
+            profiles.save(current)
+            custom=self.home/'language.yaml';custom.write_text('schema_version: 1\n')
+            with patch('builtins.input',return_value=answer),patch.object(installer,'check_platform'),patch.object(installer.subprocess,'run',return_value=subprocess.CompletedProcess([],0)),patch.object(profiles.subprocess,'check_output',return_value='{"filesystems":[]}'):
+                code,output=self.invoke('--interactive','--mode=reconfigure','--config',str(custom),'--lang=pt-BR','--yes')
+            self.assertEqual(code,0,output)
+            self.assertEqual(profiles.previous()['language'],expected)
+
     def test_unknown_profile_fields_fail_before_state_creation(self):
         path=self.home/'bad.yaml';path.write_text('unknown: true\n')
         code,output=self.invoke('--config',str(path),'--yes')

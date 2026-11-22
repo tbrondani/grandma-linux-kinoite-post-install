@@ -56,3 +56,5 @@ Open **Updates** on the desktop or in **System**. Choose **Grandma Linux setup a
 Open **Installer** to reuse the current profile or choose a YAML file. Preview with `./setup.sh --config profile.yaml --dry-run`. Preferences, applied state and private history are separate; disabled features retain existing data. See [profiles](docs/PROFILES.md).
 
 Use the same bootstrap URL with `bash -s -- --check` to check for updates to an existing installation without applying them. Use `bash -s -- --mode=update` to check and apply a published project update. These commands use the saved profile. New installations default to English when no language is specified; updates retain the saved language.
+
+If a requested language differs from the installed language, setup asks before changing it. Declining keeps the installed language and continues. Without an interactive terminal, the installed language is kept; `--yes` alone does not approve a language change.
